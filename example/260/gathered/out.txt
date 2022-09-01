@@ -1,0 +1,34 @@
+LearnReactions.py called with the following arguments:
+/home/hpark21/miniconda3/envs/p37/bin/LearnReactions.py trajectory.xyz -t 30
+
+#=========================================#
+#       Reactive MD learning script       #
+#  Use the -h argument for detailed help  #
+#=========================================#
+
+Loading molecule ... 0.212 s
+Loading charge and spin populations ... 0.226 s
+Done loading files
+The simulation timestep is 0.5 fs
+Identification time for molecules is 60.0 fs
+Lowpass filter cutoff is 100.0 cm^-1 (333.6 fs)
+Padding each reaction event with 60.0 fs
+Custom covalent radius for Na : 0.000
+Custom covalent radius for  K : 0.000
+Measuring interatomic distances ... 0.020 s
+Filtering distance time series ... 0.010 s
+Making global graphs ... 0.007 s
+Making molecule graphs ... 0.005 s
+Analyzing isomers ... 
+     Index              Formula  Instances firstFound firstStabl  maxStable meanStable       Flag                Color
+========================================================================================================================
+         0                C5H5N          1          0          0        153     153.00      Known             none (8)
+         1                   CH          1          0          0        153     153.00      Known             none (8)
+         3                C6H6N          1        160        160        116     116.00      Found           blue2 (23)
+         4                C6H6N          1        276        276        622     622.00      Found         orange3 (32)
+         5                 C2H2          1        898        898       1103    1103.00      Found          purple (11)
+         6                C4H4N          1        898        898       1103    1103.00      Found          green2 (19)
+         2                C6H6N          1        153       2001          0       0.00  Transient              red (1)
+0.003 s
+Finding reaction events ... 0.010 s
+Reaction product identification finished.  color.dat and bonds.dat generated.  Now run: vmd -e reactions.vmd -args trajectory.xyz

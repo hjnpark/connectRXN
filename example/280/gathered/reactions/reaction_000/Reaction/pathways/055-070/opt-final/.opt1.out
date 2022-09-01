@@ -1,0 +1,793 @@
+
+Running Job 1 of 1 optimize.in
+qchem optimize.in_65222.0 ./optimize.d/ 1
+/home/leeping/opt/qchem/5.0.2-openmp/exe/qcprog.exe_s optimize.in_65222.0 ./optimize.d/
+Check license passed
+
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+
+ Q-Chem 5.0, Q-Chem, Inc., Pleasanton, CA (2017)
+
+ Yihan Shao,  Zhengting Gan,  E. Epifanovsky,  A. T. B. Gilbert,  M. Wormit,  
+ J. Kussmann,  A. W. Lange,  A. Behn,  Jia Deng,  Xintian Feng,  D. Ghosh,  
+ M. Goldey,  P. R. Horn,  L. D. Jacobson,  I. Kaliman,  T. Kus,  A. Landau,  
+ Jie Liu,  E. I. Proynov,  R. M. Richard,  R. P. Steele,  E. J. Sundstrom,  
+ H. L. Woodcock III,  P. M. Zimmerman,  D. Zuev,  B. Albrecht,  E. Alguire,  
+ S. A. Baeppler,  D. Barton,  Z. Benda,  Y. A. Bernard,  E. J. Berquist,  
+ K. B. Bravaya,  H. Burton,  D. Casanova,  Chun-Min Chang,  Yunqing Chen,  
+ A. Chien,  K. D. Closser,  M. P. Coons,  S. Dasgupta,  A. L. Dempwolff,  
+ M. Diedenhofen,  Hainam Do,  R. G. Edgar,  Po-Tung Fang,  S. Fatehi,  
+ Qingguo Feng,  J. Fosso-Tande,  Qinghui Ge,  A. Ghysels,  G. Gidofalvi,  
+ J. Gomes,  J. Gonthier,  A. Gunina,  M. W. D. Hanson-Heine,  
+ P. H. P. Harbach,  A. W. Hauser,  J. E. Herr,  E. G. Hohenstein,  
+ Z. C. Holden,  Kerwin Hui,  T.-C. Jagau,  Hyunjun Ji,  B. Kaduk,  
+ K. Khistyaev,  Jaehoon Kim,  P. Klunzinger,  K. Koh,  D. Kosenkov,  
+ L. Koulias,  T. Kowalczyk,  C. M. Krauter,  A. Kunitsa,  Ka Un Lao,  
+ A. Laurent,  K. V. Lawler,  Joonho Lee,  D. Lefrancois,  S. Lehtola,  
+ D. S. Levine,  Yi-Pei Li,  You-Sheng Lin,  Fenglai Liu,  E. Livshits,  
+ A. Luenser,  P. Manohar,  E. Mansoor,  S. F. Manzer,  Shan-Ping Mao,  
+ Yuezhi Mao,  N. Mardirossian,  A. V. Marenich,  T. Markovich,  
+ L. A. Martinez-Martinez,  S. A. Maurer,  N. J. Mayhall,  S. C. McKenzie,  
+ J.-M. Mewes,  A. F. Morrison,  J. W. Mullinax,  K. Nanda,  
+ T. S. Nguyen-Beck,  R. Olivares-Amaya,  J. A. Parkhill,  T. M. Perrine,  
+ F. Plasser,  S. Prager,  A. Prociuk,  E. Ramos,  D. R. Rehn,  F. Rob,  
+ M. Schneider,  N. Sergueev,  S. M. Sharada,  S. Sharma,  D. W. Small,  
+ T. Stauch,  T. Stein,  Yu-Chuan Su,  A. J. W. Thom,  A. Tkatchenko,  
+ T. Tsuchimochi,  L. Vogt,  O. Vydrov,  M. A. Watson,  J. Wenzel,  
+ M. de Wergifosse,  T. A. Wesolowski,  A. White,  J. Witte,  A. Yamada,  
+ Jun Yang,  K. Yao,  S. Yeganeh,  S. R. Yost,  Zhi-Qiang You,  A. Zech,  
+ Igor Ying Zhang,  Xing Zhang,  Yan Zhao,  Ying Zhu,  B. R. Brooks,  
+ G. K. L. Chan,  C. J. Cramer,  M. S. Gordon,  W. J. Hehre,  A. Klamt,  
+ M. W. Schmidt,  C. D. Sherrill,  D. G. Truhlar,  A. Aspuru-Guzik,  R. Baer,  
+ A. T. Bell,  N. A. Besley,  Jeng-Da Chai,  R. A. DiStasio Jr.,  A. Dreuw,  
+ B. D. Dunietz,  T. R. Furlani,  Chao-Ping Hsu,  Yousung Jung,  Jing Kong,  
+ D. S. Lambrecht,  WanZhen Liang,  C. Ochsenfeld,  V. A. Rassolov,  
+ L. V. Slipchenko,  J. E. Subotnik,  T. Van Voorhis,  J. M. Herbert,  
+ A. I. Krylov,  P. M. W. Gill,  M. Head-Gordon
+
+ Contributors to earlier versions of Q-Chem not listed above: 
+ R. D. Adamson,  B. Austin,  J. Baker,  G. J. O. Beran,  K. Brandhorst,  
+ S. T. Brown,  E. F. C. Byrd,  A. K. Chakraborty,  C.-L. Cheng,  
+ Siu Hung Chien,  D. M. Chipman,  D. L. Crittenden,  H. Dachsel,  
+ R. J. Doerksen,  A. D. Dutoi,  L. Fusti-Molnar,  W. A. Goddard III,  
+ A. Golubeva-Zadorozhnaya,  S. R. Gwaltney,  G. Hawkins,  A. Heyden,  
+ S. Hirata,  G. Kedziora,  F. J. Keil,  C. Kelley,  Jihan Kim,  R. A. King,  
+ R. Z. Khaliullin,  P. P. Korambath,  W. Kurlancheek,  A. M. Lee,  M. S. Lee,  
+ S. V. Levchenko,  Ching Yeh Lin,  D. Liotard,  R. C. Lochan,  I. Lotan,  
+ P. E. Maslen,  N. Nair,  D. P. O'Neill,  D. Neuhauser,  E. Neuscamman,  
+ C. M. Oana,  R. Olson,  B. Peters,  R. Peverati,  P. A. Pieniazek,  
+ Y. M. Rhee,  J. Ritchie,  M. A. Rohrdanz,  E. Rosta,  N. J. Russ,  
+ H. F. Schaefer III,  N. E. Schultz,  N. Shenvi,  A. C. Simmonett,  A. Sodt,  
+ D. Stuck,  K. S. Thanthiriwatte,  V. Vanovschi,  Tao Wang,  A. Warshel,  
+ C. F. Williams,  Q. Wu,  X. Xu,  W. Zhang
+
+ Please cite Q-Chem as follows:
+ Y. Shao et al., Mol. Phys. 113, 184-215 (2015)
+ DOI: 10.1080/00268976.2014.952696
+
+ Q-Chem 5.0.2 for Intel X86 EM64T Linux
+
+ Parts of Q-Chem use Armadillo 5.200.1 (Boston Tea Smuggler).
+ http://arma.sourceforge.net/
+
+ Q-Chem begins on Thu Mar  3 04:47:19 2022  
+
+Host: 
+0
+
+     Scratch files written to ./optimize.d//
+ Dec517 15110_ 26548  26544 5633   
+Processing $rem in /home/leeping/opt/qchem/5.0.2-openmp/config/preferences.
+ MEM_STATIC 2000
+ MEM_TOTAL  8000
+ SYMMETRY   OFF
+ SYM_IGNORE TRUE 
+
+Checking the input file for inconsistencies... 	...done.
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+$molecule
+0 2
+C        1.2023813128    0.2879530947    0.3826809800
+C        0.6317420420   -1.1045369603   -0.1508848034
+C       -0.6176558106   -0.9070940666   -0.8726985933
+C       -1.0788654083    0.1774265367    0.0986296654
+C       -0.4490736059    1.4618832839   -0.4271018612
+N        0.8286106003    1.4942803355   -0.3120741618
+H        2.2051280179    0.2368354409    0.7945884707
+H        1.3122759429   -1.9493048569   -0.1906914978
+H       -0.9097517602   -1.1110255127   -1.9001690825
+H       -2.1279032222    0.2117534019    0.4007941815
+H       -0.9939788507    2.2280979763   -0.9763747156
+C        0.0451763133   -0.3543856156    1.0595434799
+H       -0.0480855712   -0.6718830578    2.0937579381
+$end
+
+$rem
+method                b3lyp
+basis                 6-31g(d)
+unrestricted          true
+symmetry              off
+sym_ignore            true
+incdft                false
+incfock               0
+scf_convergence       8
+thresh                14
+jobtype               opt
+scf_guess             read
+scf_algorithm         diis
+max_scf_cycles        100
+geom_opt_tol_gradient 600
+geom_opt_tol_displacement 2400
+geom_opt_tol_energy   200
+geom_opt_max_cycles   100
+$end
+
+--------------------------------------------------------------
+ ----------------------------------------------------------------
+             Standard Nuclear Orientation (Angstroms)
+    I     Atom           X                Y                Z
+ ----------------------------------------------------------------
+    1      C       1.2023813128     0.2879530947     0.3826809800
+    2      C       0.6317420420    -1.1045369603    -0.1508848034
+    3      C      -0.6176558106    -0.9070940666    -0.8726985933
+    4      C      -1.0788654083     0.1774265367     0.0986296654
+    5      C      -0.4490736059     1.4618832839    -0.4271018612
+    6      N       0.8286106003     1.4942803355    -0.3120741618
+    7      H       2.2051280179     0.2368354409     0.7945884707
+    8      H       1.3122759429    -1.9493048569    -0.1906914978
+    9      H      -0.9097517602    -1.1110255127    -1.9001690825
+   10      H      -2.1279032222     0.2117534019     0.4007941815
+   11      H      -0.9939788507     2.2280979763    -0.9763747156
+   12      C       0.0451763133    -0.3543856156     1.0595434799
+   13      H      -0.0480855712    -0.6718830578     2.0937579381
+ ----------------------------------------------------------------
+ Nuclear Repulsion Energy =   282.1848453883 hartrees
+ There are       25 alpha and       24 beta electrons
+ Requested basis set is 6-31G(d)
+ There are 40 shells and 117 basis functions
+
+ Total QAlloc Memory Limit   8000 MB
+ Mega-Array Size      1956 MB
+ MEM_STATIC part      2000 MB
+ A cutoff of  1.0D-14 yielded    812 shell pairs
+ There are      7084 function pairs
+ 
+ -------------------------------------------------------
+ OpenMP Integral Computing Module                       
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ Integral Job Info:
+ Integral job number is                      11
+ Integral operator is                         1
+ short-range coefficients                     0
+ long-range coefficients              100000000
+ Omega coefficients                           0
+ if combine SR and LR in K                    0
+ Integral screening is                        0
+ Integral computing path is                   2
+ max size of driver memory is            800000
+ size of driver memory is                593474
+ size of scratch memory is              2361544
+ max col of scratch BK array               1296
+ max len of scratch array in speh3          155
+ max len of scratch index in speh4           18
+ max int batch size is                      520
+ min int batch size is                       52
+ fixed nKL is                                52
+ max L of basis functions is                  2
+ order of int derivative is                   0
+ number of shells is                         40
+ number of basis is                         117
+ number of cartesian basis is               117
+ number of contracted shell pairs           812
+ number of primitive shell pairs           3615
+ maxK2 (contraction) of shell pair           36
+ max number of K2 of shell pair               1
+ max number of CS2 of shell pair             84
+ max number of PS2 of shell pair            426
+ mem total for path MDJ                  535308
+ -------------------------------------------------------
+ Smallest overlap matrix eigenvalue = 1.65E-03
+
+ Scale SEOQF with 1.000000e-01/1.000000e-01/1.000000e-01
+
+ Standard Electronic Orientation quadrupole field applied
+ Nucleus-field energy     =     0.0000000026 hartrees
+ Guess MOs from SCF MO coefficient file
+ Reading MOs from coefficient file
+ Reading MOs from coefficient file
+ An unrestricted hybrid HF-DFT SCF calculation will be
+ performed using Pulay DIIS extrapolation
+ Exchange:     0.2000 Hartree-Fock + 0.0800 Slater + 0.7200 B88
+ Correlation:  0.1900 VWN1RPA + 0.8100 LYP
+ Using SG-1 standard quadrature grid
+ SCF converges when DIIS error is below 1.0E-08
+Using Q-Chem read-in guess as SCF_GUESS READ specified.
+
+ using 4 threads for integral computing
+ -------------------------------------------------------
+ OpenMP Integral computing Module                
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ -------------------------------------------------------
+ OpenMP BLAS3 based DFT computing Module                
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ ---------------------------------------
+  Cycle       Energy         DIIS Error
+ ---------------------------------------
+    1    -286.8383302656      1.90E-09
+    2    -286.8383302656      2.92E-09 Convergence criterion met
+ ---------------------------------------
+ <S^2> = 0.7566
+ SCF time:  CPU 5.27 s  wall 1.98 s
+ SCF   energy in the final basis set = -286.83833027
+ Total energy in the final basis set = -286.83833027
+ 
+ --------------------------------------------------------------
+ 
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+ 
+ Alpha MOs
+ -- Occupied --
+-14.320 -10.224 -10.220 -10.210 -10.209 -10.208 -10.206  -0.968
+ -0.856  -0.749  -0.664  -0.606  -0.571  -0.535  -0.516  -0.467
+ -0.439  -0.405  -0.400  -0.356  -0.336  -0.298  -0.273  -0.256
+ -0.182
+ -- Virtual --
+  0.004   0.101   0.114   0.128   0.150   0.150   0.153   0.162
+  0.177   0.200   0.221   0.262   0.280   0.296   0.348   0.391
+  0.494   0.513   0.524   0.543   0.558   0.573   0.601   0.604
+  0.605   0.659   0.675   0.678   0.720   0.741   0.770   0.777
+  0.805   0.807   0.822   0.842   0.855   0.877   0.889   0.936
+  0.954   0.973   1.043   1.096   1.206   1.237   1.328   1.390
+  1.446   1.475   1.504   1.517   1.587   1.632   1.672   1.713
+  1.743   1.828   1.873   1.881   1.932   1.954   1.987   2.026
+  2.060   2.168   2.207   2.218   2.232   2.253   2.363   2.380
+  2.456   2.490   2.502   2.541   2.590   2.626   2.664   2.676
+  2.718   2.808   2.841   2.914   2.963   3.959   4.194   4.239
+  4.362   4.433   4.508   4.640
+ 
+ Beta MOs
+ -- Occupied --
+-14.319 -10.222 -10.219 -10.211 -10.209 -10.207 -10.193  -0.964
+ -0.850  -0.741  -0.652  -0.601  -0.567  -0.528  -0.511  -0.461
+ -0.434  -0.403  -0.393  -0.348  -0.332  -0.292  -0.262  -0.250
+ -- Virtual --
+ -0.062   0.020   0.103   0.118   0.134   0.151   0.156   0.157
+  0.165   0.181   0.204   0.227   0.267   0.284   0.298   0.360
+  0.394   0.497   0.518   0.532   0.553   0.561   0.578   0.607
+  0.610   0.622   0.669   0.679   0.683   0.729   0.745   0.775
+  0.787   0.808   0.810   0.824   0.844   0.858   0.882   0.892
+  0.940   0.958   0.977   1.047   1.108   1.208   1.243   1.334
+  1.392   1.449   1.480   1.514   1.525   1.594   1.640   1.677
+  1.716   1.751   1.835   1.878   1.894   1.940   1.970   1.994
+  2.034   2.068   2.172   2.222   2.226   2.242   2.270   2.368
+  2.390   2.463   2.497   2.511   2.546   2.594   2.633   2.666
+  2.684   2.725   2.813   2.846   2.917   2.965   3.961   4.208
+  4.245   4.369   4.438   4.511   4.644
+ --------------------------------------------------------------
+ 
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)    Spin (a.u.)
+  --------------------------------------------------------
+      1 C                    -0.019164       0.097138
+      2 C                    -0.163351      -0.095968
+      3 C                    -0.066289       0.888272
+      4 C                    -0.258026      -0.065721
+      5 C                     0.088633       0.047074
+      6 N                    -0.342223       0.039296
+      7 H                     0.151443       0.002851
+      8 H                     0.147235       0.005286
+      9 H                     0.136253      -0.019363
+     10 H                     0.142838       0.022702
+     11 H                     0.143022       0.001386
+     12 C                    -0.108444       0.077820
+     13 H                     0.148074      -0.000773
+  --------------------------------------------------------
+  Sum of atomic charges =    -0.000000
+  Sum of spin   charges =     1.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                 0.0000
+    Dipole Moment (Debye)
+         X      -1.2004      Y      -1.4950      Z       0.7252
+       Tot       2.0499
+    Quadrupole Moments (Debye-Ang)
+        XX     -38.9567     XY      -4.8806     YY     -43.3743
+        XZ       2.2403     YZ       0.1569     ZZ     -38.9877
+    Octopole Moments (Debye-Ang^2)
+       XXX      -7.6998    XXY      -7.3527    XYY      -7.7970
+       YYY     -19.6950    XXZ       4.1698    XYZ       2.4813
+       YYZ       0.1515    XZZ      -4.9721    YZZ      -7.5300
+       ZZZ       4.9237
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX    -214.6863   XXXY      -9.8046   XXYY     -91.1572
+      XYYY     -25.6752   YYYY    -304.9995   XXXZ     -13.8924
+      XXYZ       4.2272   XYYZ      -1.0067   YYYZ       6.8141
+      XXZZ     -63.0160   XYZZ      -1.6359   YYZZ     -73.2829
+      XZZZ     -15.3205   YZZZ       7.7611   ZZZZ    -143.6495
+ -----------------------------------------------------------------
+ Calculating analytic gradient of the SCF energy
+ Gradient of SCF Energy
+            1           2           3           4           5           6
+    1   0.0001217  -0.0002853   0.0003050  -0.0001018   0.0001010  -0.0001172
+    2   0.0002632  -0.0003589   0.0000227   0.0000048  -0.0000123   0.0000605
+    3  -0.0000158  -0.0001549   0.0000318   0.0001422   0.0000261   0.0000889
+            7           8           9          10          11          12
+    1   0.0000102   0.0000268  -0.0000284  -0.0000138   0.0000096  -0.0000265
+    2  -0.0000284   0.0000083  -0.0000443   0.0000263  -0.0000258   0.0000704
+    3  -0.0000362   0.0000123   0.0000336  -0.0000148  -0.0000786  -0.0000349
+           13
+    1  -0.0000013
+    2   0.0000135
+    3   0.0000003
+ Max gradient component =       3.589E-04
+ RMS gradient           =       1.135E-04
+ Gradient time:  CPU 7.65 s  wall 2.06 s
+ Geometry Optimization Parameters
+   NAtoms,    NIC,     NZ,  NCons,   NDum,   NFix, NCnnct, MaxDiis
+       13     128       0       0       0       0       0       0
+
+
+** GEOMETRY OPTIMIZATION IN DELOCALIZED INTERNAL COORDINATES **
+   Searching for a Minimum
+
+   Optimization Cycle:   1
+
+                       Coordinates (Angstroms)
+     ATOM                X               Y               Z
+      1  C         1.2023813128    0.2879530947    0.3826809800
+      2  C         0.6317420420   -1.1045369603   -0.1508848034
+      3  C        -0.6176558106   -0.9070940666   -0.8726985933
+      4  C        -1.0788654083    0.1774265367    0.0986296654
+      5  C        -0.4490736059    1.4618832839   -0.4271018612
+      6  N         0.8286106003    1.4942803355   -0.3120741618
+      7  H         2.2051280179    0.2368354409    0.7945884707
+      8  H         1.3122759429   -1.9493048569   -0.1906914978
+      9  H        -0.9097517602   -1.1110255127   -1.9001690825
+     10  H        -2.1279032222    0.2117534019    0.4007941815
+     11  H        -0.9939788507    2.2280979763   -0.9763747156
+     12  C         0.0451763133   -0.3543856156    1.0595434799
+     13  H        -0.0480855712   -0.6718830578    2.0937579381
+   Point Group: c1    Number of degrees of freedom:    33
+
+
+   Energy is   -286.838330266
+
+
+ Attempting to Generate Delocalized Internal Coordinates
+
+ 33 Hessian modes will be used to form the next step
+  Hessian Eigenvalues:
+     0.011427    0.011974    0.012454    0.015977    0.018823    0.021173
+     0.022780    0.037517    0.046061    0.053102    0.058637    0.072328
+     0.088682    0.105023    0.119594    0.127323    0.141003    0.158465
+     0.171827    0.183194    0.223646    0.262411    0.276488    0.290644
+     0.329851    0.345564    0.349398    0.351060    0.352949    0.353361
+     0.353666    0.370007    0.639095
+
+ Minimum Search - Taking Simple RFO Step
+ Searching for Lamda that Minimizes Along All modes
+ Value Taken    Lamda =  -0.00000123
+ Step Taken.  Stepsize is  0.006563
+
+                             Maximum     Tolerance    Cnvgd?
+         Gradient           0.000136      0.000600     YES
+         Displacement       0.003178      0.002400      NO
+         Energy change     *********      0.000002      NO
+
+
+ New Cartesian Coordinates Obtained by Inverse Iteration
+
+ Displacement from previous Coordinates is:  0.004011
+ ----------------------------------------------------------------
+             Standard Nuclear Orientation (Angstroms)
+    I     Atom           X                Y                Z
+ ----------------------------------------------------------------
+    1      C       1.2022605618     0.2877899281     0.3826700576
+    2      C       0.6319647510    -1.1042702749    -0.1508537623
+    3      C      -0.6179695351    -0.9074243792    -0.8725833402
+    4      C      -1.0787889459     0.1773797170     0.0983834660
+    5      C      -0.4489400957     1.4617300227    -0.4274884541
+    6      N       0.8288829556     1.4936158446    -0.3131648232
+    7      H       2.2048178055     0.2370312707     0.7950894988
+    8      H       1.3125116719    -1.9490128344    -0.1905935904
+    9      H      -0.9097524591    -1.1110570836    -1.9002175679
+   10      H      -2.1277320399     0.2117890529     0.4008126050
+   11      H      -0.9941420319     2.2287398046    -0.9753158650
+   12      C       0.0450953309    -0.3544508439     1.0595093076
+   13      H      -0.0482079689    -0.6718602246     2.0937524680
+ ----------------------------------------------------------------
+ Nuclear Repulsion Energy =   282.1918701153 hartrees
+ There are       25 alpha and       24 beta electrons
+ Applying Cartesian multipole field
+    Component          Value
+    ---------          -----
+     (2,0,0)        1.00000E-11
+     (0,2,0)        2.00000E-11
+     (0,0,2)       -3.00000E-11
+ Nucleus-field energy     =     0.0000000026 hartrees
+ Requested basis set is 6-31G(d)
+ There are 40 shells and 117 basis functions
+ A cutoff of  1.0D-14 yielded    812 shell pairs
+ There are      7084 function pairs
+ Smallest overlap matrix eigenvalue = 1.65E-03
+ Guess MOs from SCF MO coefficient file
+ Reading MOs from coefficient file
+ Reading MOs from coefficient file
+ An unrestricted hybrid HF-DFT SCF calculation will be
+ performed using Pulay DIIS extrapolation
+ Exchange:     0.2000 Hartree-Fock + 0.0800 Slater + 0.7200 B88
+ Correlation:  0.1900 VWN1RPA + 0.8100 LYP
+ Using SG-1 standard quadrature grid
+ SCF converges when DIIS error is below 1.0E-08
+ Geometry optimization detected.  Setting ReadMinima to 0
+ Setting SaveMinima to 0
+Using Q-Chem read-in guess as SCF_GUESS READ specified.
+
+ using 4 threads for integral computing
+ -------------------------------------------------------
+ OpenMP Integral computing Module                
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ -------------------------------------------------------
+ OpenMP BLAS3 based DFT computing Module                
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ ---------------------------------------
+  Cycle       Energy         DIIS Error
+ ---------------------------------------
+    1    -286.8383878720      3.40E-05
+    2    -286.8383308022      5.45E-06
+    3    -286.8383307817      7.11E-06
+    4    -286.8383308679      1.94E-06
+    5    -286.8383308737      6.63E-07
+    6    -286.8383308745      2.05E-07
+    7    -286.8383308747      5.40E-08
+    8    -286.8383308747      2.59E-08
+    9    -286.8383308747      7.02E-09 Convergence criterion met
+ ---------------------------------------
+ <S^2> = 0.7566
+ SCF time:  CPU 22.72 s  wall 8.23 s
+ SCF   energy in the final basis set = -286.83833087
+ Total energy in the final basis set = -286.83833087
+ 
+ --------------------------------------------------------------
+ 
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+ 
+ Alpha MOs
+ -- Occupied --
+-14.320 -10.224 -10.220 -10.210 -10.209 -10.208 -10.206  -0.968
+ -0.856  -0.749  -0.664  -0.606  -0.571  -0.535  -0.516  -0.467
+ -0.439  -0.405  -0.400  -0.356  -0.336  -0.298  -0.273  -0.256
+ -0.182
+ -- Virtual --
+  0.004   0.101   0.114   0.128   0.150   0.150   0.153   0.162
+  0.177   0.200   0.221   0.262   0.280   0.296   0.348   0.391
+  0.494   0.513   0.524   0.543   0.558   0.573   0.601   0.605
+  0.605   0.659   0.675   0.677   0.720   0.741   0.770   0.777
+  0.805   0.807   0.822   0.842   0.854   0.877   0.889   0.936
+  0.954   0.973   1.043   1.096   1.206   1.237   1.328   1.390
+  1.446   1.475   1.504   1.517   1.587   1.632   1.672   1.713
+  1.743   1.828   1.873   1.881   1.932   1.954   1.987   2.026
+  2.060   2.168   2.207   2.218   2.232   2.253   2.363   2.380
+  2.456   2.490   2.502   2.541   2.590   2.626   2.664   2.676
+  2.718   2.808   2.841   2.914   2.963   3.959   4.194   4.239
+  4.362   4.433   4.508   4.640
+ 
+ Beta MOs
+ -- Occupied --
+-14.319 -10.222 -10.219 -10.211 -10.209 -10.207 -10.193  -0.964
+ -0.850  -0.741  -0.652  -0.601  -0.567  -0.528  -0.511  -0.461
+ -0.434  -0.403  -0.394  -0.348  -0.332  -0.292  -0.262  -0.251
+ -- Virtual --
+ -0.062   0.020   0.103   0.118   0.134   0.151   0.156   0.157
+  0.165   0.181   0.204   0.227   0.267   0.284   0.298   0.360
+  0.394   0.497   0.518   0.532   0.553   0.561   0.578   0.607
+  0.610   0.622   0.669   0.679   0.683   0.729   0.745   0.775
+  0.787   0.808   0.810   0.824   0.844   0.858   0.882   0.892
+  0.940   0.958   0.976   1.047   1.108   1.208   1.243   1.334
+  1.392   1.449   1.481   1.514   1.525   1.594   1.640   1.677
+  1.716   1.751   1.835   1.878   1.894   1.940   1.970   1.994
+  2.034   2.069   2.172   2.222   2.226   2.242   2.270   2.368
+  2.390   2.463   2.497   2.511   2.546   2.594   2.633   2.666
+  2.684   2.725   2.813   2.846   2.917   2.965   3.961   4.208
+  4.245   4.368   4.438   4.511   4.644
+ --------------------------------------------------------------
+ 
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)    Spin (a.u.)
+  --------------------------------------------------------
+      1 C                    -0.019092       0.096859
+      2 C                    -0.163415      -0.095847
+      3 C                    -0.066263       0.888522
+      4 C                    -0.258037      -0.065708
+      5 C                     0.088653       0.047042
+      6 N                    -0.342225       0.039234
+      7 H                     0.151439       0.002843
+      8 H                     0.147212       0.005290
+      9 H                     0.136243      -0.019296
+     10 H                     0.142804       0.022691
+     11 H                     0.143041       0.001382
+     12 C                    -0.108438       0.077771
+     13 H                     0.148078      -0.000783
+  --------------------------------------------------------
+  Sum of atomic charges =     0.000000
+  Sum of spin   charges =     1.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                -0.0000
+    Dipole Moment (Debye)
+         X      -1.2004      Y      -1.4922      Z       0.7275
+       Tot       2.0486
+    Quadrupole Moments (Debye-Ang)
+        XX     -38.9589     XY      -4.8808     YY     -43.3703
+        XZ       2.2419     YZ       0.1595     ZZ     -38.9891
+    Octopole Moments (Debye-Ang^2)
+       XXX      -7.7021    XXY      -7.3437    XYY      -7.7996
+       YYY     -19.6515    XXZ       4.1822    XYZ       2.4846
+       YYZ       0.1660    XZZ      -4.9708    YZZ      -7.5293
+       ZZZ       4.9530
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX    -214.7195   XXXY      -9.8129   XXYY     -91.1424
+      XYYY     -25.6797   YYYY    -304.8867   XXXZ     -13.8778
+      XXYZ       4.2413   XYYZ      -0.9999   YYYZ       6.8457
+      XXZZ     -63.0217   XYZZ      -1.6377   YYZZ     -73.2848
+      XZZZ     -15.3107   YZZZ       7.7948   ZZZZ    -143.6687
+ -----------------------------------------------------------------
+ Calculating analytic gradient of the SCF energy
+ Gradient of SCF Energy
+            1           2           3           4           5           6
+    1   0.0000178  -0.0001941   0.0000918  -0.0000051   0.0000071   0.0000437
+    2   0.0002728  -0.0001762   0.0000067  -0.0000035  -0.0000191  -0.0000684
+    3   0.0001185  -0.0000747   0.0000132   0.0000171  -0.0000116  -0.0000689
+            7           8           9          10          11          12
+    1  -0.0000035   0.0000348  -0.0000213   0.0000081  -0.0000105   0.0000353
+    2  -0.0000149   0.0000380  -0.0000368   0.0000077   0.0000100  -0.0000287
+    3  -0.0000035   0.0000084   0.0000327  -0.0000003   0.0000100  -0.0000486
+           13
+    1  -0.0000042
+    2   0.0000123
+    3   0.0000077
+ Max gradient component =       2.728E-04
+ RMS gradient           =       7.068E-05
+ Gradient time:  CPU 8.11 s  wall 2.18 s
+ Geometry Optimization Parameters
+   NAtoms,    NIC,     NZ,  NCons,   NDum,   NFix, NCnnct, MaxDiis
+       13     128       0       0       0       0       0       0
+
+ Cartesian Hessian Update
+ Hessian Updated using BFGS Update
+
+
+** GEOMETRY OPTIMIZATION IN DELOCALIZED INTERNAL COORDINATES **
+   Searching for a Minimum
+
+   Optimization Cycle:   2
+
+                       Coordinates (Angstroms)
+     ATOM                X               Y               Z
+      1  C         1.2022605618    0.2877899281    0.3826700576
+      2  C         0.6319647510   -1.1042702749   -0.1508537623
+      3  C        -0.6179695351   -0.9074243792   -0.8725833402
+      4  C        -1.0787889459    0.1773797170    0.0983834660
+      5  C        -0.4489400957    1.4617300227   -0.4274884541
+      6  N         0.8288829556    1.4936158446   -0.3131648232
+      7  H         2.2048178055    0.2370312707    0.7950894988
+      8  H         1.3125116719   -1.9490128344   -0.1905935904
+      9  H        -0.9097524591   -1.1110570836   -1.9002175679
+     10  H        -2.1277320399    0.2117890529    0.4008126050
+     11  H        -0.9941420319    2.2287398046   -0.9753158650
+     12  C         0.0450953309   -0.3544508439    1.0595093076
+     13  H        -0.0482079689   -0.6718602246    2.0937524680
+   Point Group: c1    Number of degrees of freedom:    33
+
+
+   Energy is   -286.838330875
+
+ Hessian Updated using BFGS Update
+
+ 33 Hessian modes will be used to form the next step
+  Hessian Eigenvalues:
+     0.010583    0.012099    0.012531    0.016627    0.019286    0.020435
+     0.029271    0.038238    0.046070    0.053264    0.059755    0.072547
+     0.086563    0.105023    0.119324    0.122311    0.143265    0.157447
+     0.160800    0.176071    0.225105    0.259359    0.267622    0.284024
+     0.317040    0.345731    0.349369    0.351089    0.352976    0.353564
+     0.353678    0.370869    0.641282
+
+ Minimum Search - Taking Simple RFO Step
+ Searching for Lamda that Minimizes Along All modes
+ Value Taken    Lamda =   0.00000000
+ Step Taken.  Stepsize is  0.003682
+
+                             Maximum     Tolerance    Cnvgd?
+         Gradient           0.000070      0.000600     YES
+         Displacement       0.002005      0.002400     YES
+         Energy change     -0.000001      0.000002     YES
+
+
+                       Distance Matrix (Angstroms)
+             C (  1)   C (  2)   C (  3)   C (  4)   C (  5)   N (  6)
+   C (  2)  1.596157
+   C (  3)  2.513451  1.456701
+   C (  4)  2.301347  2.152074  1.527066
+   C (  5)  2.181961  2.798078  2.416521  1.524076
+   N (  6)  1.441393  2.610390  2.858553  2.353946  1.283323
+   H (  7)  1.085259  2.273272  3.472613  3.357236  3.168125  2.168047
+   H (  8)  2.311725  1.085501  2.297123  3.213000  3.846037  3.478593
+   H (  9)  3.410124  2.331783  1.087491  2.383915  3.000085  3.510828
+   H ( 10)  3.330909  3.106811  2.270145  1.092213  2.250950  3.300669
+   H ( 11)  3.230417  3.799068  3.160314  2.316910  1.088882  2.074192
+   C ( 12)  1.486478  1.540008  2.116227  1.571535  2.398697  2.431853
+   H ( 13)  2.326457  2.384926  3.029730  2.401000  3.327078  3.354374
+             H (  7)   H (  8)   H (  9)   H ( 10)   H ( 11)   C ( 12)
+   H (  8)  2.558627
+   H (  9)  4.333886  2.926336
+   H ( 10)  4.350526  4.105375  2.920297
+   H ( 11)  4.163482  4.836327  3.466527  2.691997
+   C ( 12)  2.254810  2.389922  3.200652  2.340019  3.448681
+   H ( 13)  2.754766  2.949731  4.109373  2.823349  4.327523  1.085870
+
+ 
+ Final energy is   -286.838330874675     
+
+
+ ******************************
+ **  OPTIMIZATION CONVERGED  **
+ ******************************
+
+                       Coordinates (Angstroms)
+     ATOM                X               Y               Z
+      1  C         1.2022605618    0.2877899281    0.3826700576
+      2  C         0.6319647510   -1.1042702749   -0.1508537623
+      3  C        -0.6179695351   -0.9074243792   -0.8725833402
+      4  C        -1.0787889459    0.1773797170    0.0983834660
+      5  C        -0.4489400957    1.4617300227   -0.4274884541
+      6  N         0.8288829556    1.4936158446   -0.3131648232
+      7  H         2.2048178055    0.2370312707    0.7950894988
+      8  H         1.3125116719   -1.9490128344   -0.1905935904
+      9  H        -0.9097524591   -1.1110570836   -1.9002175679
+     10  H        -2.1277320399    0.2117890529    0.4008126050
+     11  H        -0.9941420319    2.2287398046   -0.9753158650
+     12  C         0.0450953309   -0.3544508439    1.0595093076
+     13  H        -0.0482079689   -0.6718602246    2.0937524680
+
+Z-matrix Print:
+$molecule
+0 2
+N 
+C  1 1.283323
+H  2 1.088882 1 121.726845
+C  1 1.441393 2 106.269102 3 -176.020708 0
+H  4 1.085259 1 117.508594 2 -165.187890 0
+C  4 1.486478 1 112.309170 2 -16.474447 0
+H  6 1.085870 4 128.819244 1 -128.034663 0
+C  2 1.524076 1 113.684200 3 172.091700 0
+H  8 1.092213 2 117.767581 1 156.600165 0
+C  8 1.527066 2 104.746595 1 -68.231790 0
+H  10 1.087491 8 130.760137 2 -72.229526 0
+C  10 1.456701 8 92.286736 2 85.254967 0
+H  12 1.085501 10 128.680321 8 161.649222 0
+$end
+
+ 
+ --------------------------------------------------------------
+ 
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+ 
+ Alpha MOs
+ -- Occupied --
+-14.320 -10.224 -10.220 -10.210 -10.209 -10.208 -10.206  -0.968
+ -0.856  -0.749  -0.664  -0.606  -0.571  -0.535  -0.516  -0.467
+ -0.439  -0.405  -0.400  -0.356  -0.336  -0.298  -0.273  -0.256
+ -0.182
+ -- Virtual --
+  0.004   0.101   0.114   0.128   0.150   0.150   0.153   0.162
+  0.177   0.200   0.221   0.262   0.280   0.296   0.348   0.391
+  0.494   0.513   0.524   0.543   0.558   0.573   0.601   0.605
+  0.605   0.659   0.675   0.677   0.720   0.741   0.770   0.777
+  0.805   0.807   0.822   0.842   0.854   0.877   0.889   0.936
+  0.954   0.973   1.043   1.096   1.206   1.237   1.328   1.390
+  1.446   1.475   1.504   1.517   1.587   1.632   1.672   1.713
+  1.743   1.828   1.873   1.881   1.932   1.954   1.987   2.026
+  2.060   2.168   2.207   2.218   2.232   2.253   2.363   2.380
+  2.456   2.490   2.502   2.541   2.590   2.626   2.664   2.676
+  2.718   2.808   2.841   2.914   2.963   3.959   4.194   4.239
+  4.362   4.433   4.508   4.640
+ 
+ Beta MOs
+ -- Occupied --
+-14.319 -10.222 -10.219 -10.211 -10.209 -10.207 -10.193  -0.964
+ -0.850  -0.741  -0.652  -0.601  -0.567  -0.528  -0.511  -0.461
+ -0.434  -0.403  -0.394  -0.348  -0.332  -0.292  -0.262  -0.251
+ -- Virtual --
+ -0.062   0.020   0.103   0.118   0.134   0.151   0.156   0.157
+  0.165   0.181   0.204   0.227   0.267   0.284   0.298   0.360
+  0.394   0.497   0.518   0.532   0.553   0.561   0.578   0.607
+  0.610   0.622   0.669   0.679   0.683   0.729   0.745   0.775
+  0.787   0.808   0.810   0.824   0.844   0.858   0.882   0.892
+  0.940   0.958   0.976   1.047   1.108   1.208   1.243   1.334
+  1.392   1.449   1.481   1.514   1.525   1.594   1.640   1.677
+  1.716   1.751   1.835   1.878   1.894   1.940   1.970   1.994
+  2.034   2.069   2.172   2.222   2.226   2.242   2.270   2.368
+  2.390   2.463   2.497   2.511   2.546   2.594   2.633   2.666
+  2.684   2.725   2.813   2.846   2.917   2.965   3.961   4.208
+  4.245   4.368   4.438   4.511   4.644
+ --------------------------------------------------------------
+ 
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)    Spin (a.u.)
+  --------------------------------------------------------
+      1 C                    -0.019092       0.096859
+      2 C                    -0.163415      -0.095847
+      3 C                    -0.066263       0.888522
+      4 C                    -0.258037      -0.065708
+      5 C                     0.088653       0.047042
+      6 N                    -0.342225       0.039234
+      7 H                     0.151439       0.002843
+      8 H                     0.147212       0.005290
+      9 H                     0.136243      -0.019296
+     10 H                     0.142804       0.022691
+     11 H                     0.143041       0.001382
+     12 C                    -0.108438       0.077771
+     13 H                     0.148078      -0.000783
+  --------------------------------------------------------
+  Sum of atomic charges =     0.000000
+  Sum of spin   charges =     1.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                -0.0000
+    Dipole Moment (Debye)
+         X      -1.2004      Y      -1.4922      Z       0.7275
+       Tot       2.0486
+    Quadrupole Moments (Debye-Ang)
+        XX     -38.9589     XY      -4.8808     YY     -43.3703
+        XZ       2.2419     YZ       0.1595     ZZ     -38.9891
+    Octopole Moments (Debye-Ang^2)
+       XXX      -7.7021    XXY      -7.3437    XYY      -7.7996
+       YYY     -19.6515    XXZ       4.1822    XYZ       2.4846
+       YYZ       0.1660    XZZ      -4.9708    YZZ      -7.5293
+       ZZZ       4.9530
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX    -214.7195   XXXY      -9.8129   XXYY     -91.1424
+      XYYY     -25.6797   YYYY    -304.8867   XXXZ     -13.8778
+      XXYZ       4.2413   XYYZ      -0.9999   YYYZ       6.8457
+      XXZZ     -63.0217   XYZZ      -1.6377   YYZZ     -73.2848
+      XZZZ     -15.3107   YZZZ       7.7948   ZZZZ    -143.6687
+ -----------------------------------------------------------------
+Archival summary:
+1\1\c8-73\OPT\ProcedureUnspecified\6-31G*\166(2)\hpark21\ThuMar304:47:382022ThuMar304:47:382022\0\\#,OPT,ProcedureUnspecified,6-31G*,\\0,2\N\C,1,1.28332\H,2,1.08888,1,121.727\C,1,1.44139,2,106.269,3,-176.021,0\H,4,1.08526,1,117.509,2,-165.188,0\C,4,1.48648,1,112.309,2,-16.4744,0\H,6,1.08587,4,128.819,1,-128.035,0\C,2,1.52408,1,113.684,3,172.092,0\H,8,1.09221,2,117.768,1,156.6,0\C,8,1.52707,2,104.747,1,-68.2318,0\H,10,1.08749,8,130.76,2,-72.2295,0\C,10,1.4567,8,92.2867,2,85.255,0\H,12,1.0855,10,128.68,8,161.649,0\\\@
+
+ Total job time:  19.13s(wall), 47.26s(cpu) 
+ Thu Mar  3 04:47:38 2022
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+

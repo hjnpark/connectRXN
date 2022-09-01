@@ -1,0 +1,39 @@
+$molecule
+0 2
+C        0.9062596326    0.1913601887    0.3259237159
+C        1.1593186027   -1.1085564734   -0.4014148950
+C        0.0492977700   -1.8209470162   -0.2958271960
+C       -1.3325447101    0.8333021752    0.2707529228
+C       -0.5018579553    1.6239138817   -0.6171019631
+N        0.7605083045    1.3049146494   -0.6217533397
+H        1.6561439773    0.4524552822    1.0853012915
+H        2.0717133946   -1.3376973863   -0.9527791680
+H       -0.3421959452   -2.7757924361   -0.6316153512
+H       -2.4005184866    0.9496205783    0.4098558011
+H       -0.8683906967    2.4280958766   -1.2524332873
+C       -0.5012245677   -0.0965557934    0.8666805642
+H       -0.7145027892   -0.6562453058    1.7694628471
+$end
+
+$rem
+method                b3lyp
+basis                 6-31+g(d,p)
+unrestricted          true
+symmetry              off
+sym_ignore            true
+incdft                false
+incfock               0
+scf_convergence       8
+thresh                14
+jobtype               rpath
+scf_guess             core
+scf_guess_mix         5
+scf_algorithm         diis
+max_scf_cycles        100
+rpath_direction       1
+rpath_tol_displacement 1000
+rpath_max_cycles      50
+geom_opt_max_cycles   300
+geom_opt_hessian      read
+$end
+

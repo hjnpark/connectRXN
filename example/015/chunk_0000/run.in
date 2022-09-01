@@ -1,0 +1,26 @@
+coordinates start.xyz
+charge      0
+spinmult    2
+run         md
+method      ub3lyp
+basis       6-31g
+
+bond_order_list   yes
+bond_order_thresh 0.1
+
+tinit           200
+timestep        0.5
+velocities      vel.xyz
+nstep           2000
+scfintegrator   reversible
+removecomm      no
+
+# SCF options
+maxit           100
+convthre        5e-5
+purify          no
+scf             diis+a
+threall         1.0e-12
+threspdp        1e-4
+dftgrid         1
+
