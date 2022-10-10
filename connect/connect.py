@@ -2,13 +2,14 @@
 import numpy as np
 import time
 import sys, os, copy
+
+from calc_rmsd.permutation_invariant_rmsd import min_rmsd
 from .molecule import Molecule, TopEqual, MolEqual, Elements
 from collections import OrderedDict
 import tarfile
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# import matplotlib.image as mpimg
 from xyz2mol import xyz2mol
 from rdkit import Chem
 from rdkit.Chem import Draw
@@ -29,10 +30,16 @@ def equal(m1, m2, threshold=0.05):
     True or False
     """
     top_equal = TopEqual(m1, m2)
-    M = m1 + m2
-    M.align()
-    rmsd = np.sqrt(np.mean((M[0].xyzs[0] - M[1].xyzs[0]) ** 2))
-    return top_equal and rmsd < threshold  # if True else MolEqual(m1, m2)
+    if not top_equal:
+        return False
+    #M = m1 + m2
+    #M.align()
+    #rmsd = np.sqrt(np.mean((M[0].xyzs[0] - M[1].xyzs[0]) ** 2))
+    minimum_rmsd = min_rmsd(m1,m2)[0]
+    #if rmsd < threshold:
+    #    M = m1 + m1
+    #    M.write('%f.xyz' %rmsd)
+    return minimum_rmsd < threshold  # if True else MolEqual(m1, m2)
 
 
 class BuildGraph(object):
@@ -60,7 +67,7 @@ class BuildGraph(object):
         return temp
 
     def unify(self, rxns):
-        """Pick out different moleucle obejcts with the same connectivity/topology and unify them"""
+        """Pick out same molecules with different molecule objects and unify them"""
 
         temp = copy.deepcopy(rxns)
         ite = len(rxns)
@@ -146,11 +153,6 @@ class BuildGraph(object):
                 if i != len(v) - 1:
                     temp_G.add_edge(v[i], v[i + 1])
             self.G = nx.compose(self.G, temp_G)
-
-        # for path in list(nx.connected_components(self.G)):
-        #    if len(path) < 6:
-        #        for node in path:
-        #            self.G.remove_node(node)
 
         return self.G
 
@@ -458,7 +460,7 @@ def main():
         "--imgsize",
         type=float,
         default=1.0,
-        help="Bigger number will generate smaller 2D molecular images for graphs with more than 3 nodes",
+        help="Bigger number will generate bigger 2D molecular images for graphs with more than 3 nodes",
     )
     parser.add_argument(
         "--imgx",
