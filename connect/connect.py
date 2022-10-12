@@ -32,14 +32,24 @@ def equal(m1, m2, threshold=0.05):
     top_equal = TopEqual(m1, m2)
     if not top_equal:
         return False
-    #M = m1 + m2
-    #M.align()
-    #rmsd = np.sqrt(np.mean((M[0].xyzs[0] - M[1].xyzs[0]) ** 2))
-    minimum_rmsd = min_rmsd(m1,m2)[0]
-    #if rmsd < threshold:
-    #    M = m1 + m1
-    #    M.write('%f.xyz' %rmsd)
-    return minimum_rmsd < threshold  # if True else MolEqual(m1, m2)
+    minimum_rmsd = min_rmsd(m1, m2)[0]
+
+    import random
+
+    rand_int = random.randint(0, 100)
+    if minimum_rmsd < threshold and rand_int == 50:
+        M = m1 + m2
+        M.align()
+        if not os.path.exists("low_rmsd"):
+            os.mkdir("low_rmsd")
+        M.comms = [
+            "Minimum RMSD between the two molecules is %f Angstrom" % minimum_rmsd,
+            "",
+        ]
+        mol_num = (len(os.listdir("low_rmsd"))) + 1
+        M.write("low_rmsd/%i.xyz" % mol_num)
+
+    return minimum_rmsd < threshold
 
 
 class BuildGraph(object):
@@ -52,38 +62,59 @@ class BuildGraph(object):
         self.rxns = rxns
         self.charge = charge
 
-    def unify_between_lists(self, rxns, ite):
-        temp = copy.deepcopy(rxns)
-        for i, (k1, v1) in enumerate(rxns.items()):
-            for j, (k2, v2) in enumerate(rxns.items()):
-                if i < j and i == ite:
-                    # temp_list = copy.deepcopy(v2)
-                    for k, m1 in enumerate(v1):
-                        for l, m2 in enumerate(v2):
-                            if l > k and abs(k - l) % 2 == 0 and equal(m1, m2):
-                                temp[k2][l] = m1
-                                # temp_list[l] = m1
-                    # temp[k2] = temp_list
-        return temp
-
-    def unify(self, rxns):
+    def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
 
-        temp = copy.deepcopy(rxns)
-        ite = len(rxns)
-        for i in range(ite - 1):
-            temp = self.unify_between_lists(rxns, i)
+        temp_rxn = copy.deepcopy(self.rxns)
 
-        unified = copy.deepcopy(temp)
-        for k, v in temp.items():
-            for i, m1 in enumerate(v):
-                for j, m2 in enumerate(v):
-                    if i < j and abs(i - j) % 2 == 0 and equal(m1, m2):
-                        unified[k][j] = m1
+        mol_info = {}
+        # skip_list = [] # Will this method be faster?
+        for dict_ind1, (k1, v1) in enumerate(self.rxns.items()):
+            # Unify within a molecule list
+            for p1, m1 in enumerate(v1):
+                for p2, m2 in enumerate(v1):
+                    if p2 > p1 and abs(p1 - p2) % 2 == 0 and equal(m1, m2):
+                        key = "%s_sep_%i" % (k1, p2)
+                        if m1 not in mol_info:
+                            mol_info[m1] = [key]
+                        else:
+                            mol_info[m1].append(key)
+            # Now between molecule lists
+            for dict_ind2, (k2, v2) in enumerate(self.rxns.items()):
+                if dict_ind2 > dict_ind1:
+                    for p1, m1 in enumerate(v1):
+                        for p2, m2 in enumerate(v2):
+                            if abs(p1 - p2) % 2 == 0 and equal(m1, m2):
+                                key = "%s_sep_%i" % (k2, p2)
+                                if m1 not in mol_info:
+                                    mol_info[m1] = [key]
+                                else:
+                                    mol_info[m1].append(key)
+        # Unifying between the mol_info keys
+        same_Ms = []
+        for i, M1 in enumerate(mol_info):
+            for j, M2 in enumerate(mol_info):
+                if j > i and equal(M1, M2):
+                    same_Ms.append([M1, M2])
 
-        return unified
+        for Ms in same_Ms:
+            if Ms[0] and Ms[-1] in mol_info:
+                appending_list = mol_info.pop(Ms[-1])
+                for keys in appending_list:
+                    mol_info[Ms[0]].append(keys)
+
+        # Modifying temp_rxn based on the keys
+        for M, keys in mol_info.items():
+            for key in keys:
+                frames, ind = key.split("_sep_")
+                ind = int(ind)
+                temp_rxn[frames][ind] = M
+        self.rxns = temp_rxn
 
     def reduce(self):
+        """
+        Reduce A-B-C-C-D-F to A-B-C-D-F
+        """
         reduced = {}
         for k, v in self.rxns.items():
             reduced_list = []
@@ -102,45 +133,37 @@ class BuildGraph(object):
                 else:
                     reduced_list.append(v[i])
             reduced[k] = reduced_list
-        return reduced
+        self.rxns = reduced
 
     def build(self):
         temp_G = nx.Graph()
-        reduced = self.reduce()
-        for k, v in self.unify(reduced).items():
+        self.reduce()
+        self.unify()
+        for k, v in self.rxns.items():
             for i in range(len(v)):
-                atoms = []
-                for atom in v[i].elem:
-                    atoms.append(Elements.index(atom))
-                a = xyz2mol(
-                    atoms, v[i].xyzs[0], charge=self.charge
-                )  # , allow_charged_fragments=False)
-                if len(a) != 0:
-                    smiles = Chem.MolToSmiles(a[0])
+                if i % 2 != 1:
+                    atoms = []
+                    for atom in v[i].elem:
+                        atoms.append(Elements.index(atom))
+                    a = xyz2mol(
+                        atoms, v[i].xyzs[0], charge=self.charge
+                    )  # , allow_charged_fragments=False)
+                    if len(a) != 0:
+                        smiles = Chem.MolToSmiles(a[0])
 
-                    if not os.path.exists("2D_images"):
-                        os.mkdir("2D_images")
-                    Draw.MolToFile(
-                        a[0],
-                        os.path.join("2D_images", "%s.png" % smiles.replace("/", "_")),
-                    )
+                        if not os.path.exists("2D_images"):
+                            os.mkdir("2D_images")
+                        Draw.MolToFile(
+                            a[0],
+                            os.path.join(
+                                "2D_images", "%s.png" % smiles.replace("/", "_")
+                            ),
+                        )
 
-                else:
-                    print(
-                        "WARNING: A node is missing SMILES. Probably from a wrong charge... This needs to be fixed"
-                    )
-
-                if i % 2 == 1:
-                    temp_G.add_node(
-                        v[i],
-                        smiles=smiles,
-                        image=os.path.join(
-                            "2D_images", smiles.replace("/", "_") + ".png"
-                        ),
-                        E=round(float(v[i].qm_energies[0]), 5),
-                        color="red",
-                    )
-                else:
+                    else:
+                        print(
+                            "WARNING: A node is missing SMILES. Probably from a wrong charge... This needs to be fixed"
+                        )
                     temp_G.add_node(
                         v[i],
                         smiles=smiles,
@@ -150,6 +173,17 @@ class BuildGraph(object):
                         E=round(float(v[i].qm_energies[0]), 5),
                         color="green",
                     )
+                else:
+                    temp_G.add_node(
+                        v[i],
+                        # smiles=smiles,
+                        # image=os.path.join(
+                        #    "2D_images", smiles.replace("/", "_") + ".png"
+                        # ),
+                        E=round(float(v[i].qm_energies[0]), 5),
+                        color="red",
+                    )
+
                 if i != len(v) - 1:
                     temp_G.add_edge(v[i], v[i + 1])
             self.G = nx.compose(self.G, temp_G)
@@ -497,10 +531,35 @@ def main():
     subs = [G.subgraph(c).copy() for c in nx.connected_components(G)]
     if not os.path.exists("graphs"):
         os.mkdir("graphs")
+
     for i, G in enumerate(subs):
+        E_dict = {}
+        Es = nx.get_node_attributes(G, "E")
+
+        for M in G.nodes():
+            E = Es[M]
+            if E not in E_dict:
+                E_dict[E] = [M]
+            else:
+                E_dict[E].append(M)
+
+        for k, v in E_dict.items():
+            sub_dir = "subgraph_%i" % i
+            e_dir = os.path.join(sub_dir, str(abs(k)))
+
+            if len(v) > 1:
+                if not os.path.exists(sub_dir):
+                    os.mkdir(sub_dir)
+                if not os.path.exists(e_dir):
+                    os.mkdir(e_dir)
+
+                for M_i, M in enumerate(v):
+                    print(e_dir)
+                    print(M)
+                    M.write(os.path.join(e_dir, "%i.xyz" % M_i))
+
         pos = nx.spring_layout(G, iterations=1000)
         fig, ax = plt.subplots(figsize=(args.figsize, args.figsize))
-        Es = nx.get_node_attributes(G, "E")
         # images = nx.get_node_attributes(G, "image")
         colors = nx.get_node_attributes(G, "color")
         # smiles = nx.get_node_attributes(G, "smiles")
@@ -516,8 +575,7 @@ def main():
         if nnodes == 3:
             img_size = 0.15
         else:
-            img_size = 0.15 / (
-                np.sqrt(nnodes / 3)) * args.imgsize
+            img_size = 0.15 / (np.sqrt(nnodes / 3)) * args.imgsize
 
         img_center = img_size / 2
 

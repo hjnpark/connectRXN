@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="example/graph_PES_8.png" width="500">
+    <img src="images/example.png" width="500">
 </p>
 connectRXN collects refined unit reactions (consist of optimized reactant, transition state, and product molecules) from molecular dynamic simulation trajectories. The trajectories need to be processed through the nanoreactor analysis code (https://github.com/leeping/nanoreactor) to be compatible with this code. The refined unit reactions from the nanoreactor code are typically in `gathered/reactions/reaction_xxx/Reaction/pathways/`. Adding a directory named with an integer in front (i.e. `012/gathered/reactions/..`) will allow connectRXN to navigate in to the directory and collect unit reactions. If there are multiple directories starting with different integers, it will collect unit reactions from all of them. Once the collection is done, it connects unit reactions based on their topologies. To distinguish mirror images and cis/trans isomers, two molecules with the same topology are aligned and RMSD values are calculated. If the RMSD is larger than a threshold, the two molecules will be considered different. networkx is used to map out a potential energy surface at the end.  
 
