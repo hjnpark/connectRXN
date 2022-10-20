@@ -1,0 +1,32 @@
+LearnReactions.py called with the following arguments:
+/home/hpark21/miniconda3/envs/p37/bin/LearnReactions.py trajectory.xyz -t 30
+
+#=========================================#
+#       Reactive MD learning script       #
+#  Use the -h argument for detailed help  #
+#=========================================#
+
+Loading molecule ... 0.213 s
+Loading charge and spin populations ... 0.215 s
+Done loading files
+The simulation timestep is 0.5 fs
+Identification time for molecules is 60.0 fs
+Lowpass filter cutoff is 100.0 cm^-1 (333.6 fs)
+Padding each reaction event with 60.0 fs
+Custom covalent radius for Na : 0.000
+Custom covalent radius for  K : 0.000
+Measuring interatomic distances ... 0.017 s
+Filtering distance time series ... 0.011 s
+Making global graphs ... 0.006 s
+Making molecule graphs ... 0.004 s
+Analyzing isomers ... 
+     Index              Formula  Instances firstFound firstStabl  maxStable meanStable       Flag                Color
+========================================================================================================================
+         0                C5H5N          1          0          0        115     115.00      Known             none (8)
+         1                   CH          1          0          0        115     115.00      Known             none (8)
+         2                C6H6N          1        115        115        104     104.00      Found           blue2 (23)
+         4                C6H6N          1        271        271       1730    1730.00      Found         orange3 (32)
+         3                C6H6N          1        219       2001          0       0.00  Transient              red (1)
+0.002 s
+Finding reaction events ... 0.006 s
+Reaction product identification finished.  color.dat and bonds.dat generated.  Now run: vmd -e reactions.vmd -args trajectory.xyz

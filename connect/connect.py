@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 import numpy as np
-import time
-import sys, os, copy
+import sys, os, copy, itertools
 
 from calc_rmsd.permutation_invariant_rmsd import min_rmsd
-from .molecule import Molecule, TopEqual, MolEqual, Elements
+from .molecule import Molecule, TopEqual, Elements
 from collections import OrderedDict
 import tarfile
 import networkx as nx
@@ -61,86 +60,33 @@ class BuildGraph(object):
         self.G = nx.Graph()
         self.rxns = rxns
         self.charge = charge
+        self.unique_rxns = []
 
     def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
 
-        temp_rxn = copy.deepcopy(self.rxns)
-
-        mol_info = {}
-        # skip_list = [] # Will this method be faster?
-        for dict_ind1, (k1, v1) in enumerate(self.rxns.items()):
-            # Unify within a molecule list
-            for p1, m1 in enumerate(v1):
-                for p2, m2 in enumerate(v1):
-                    if p2 > p1 and abs(p1 - p2) % 2 == 0 and equal(m1, m2):
-                        key = "%s_sep_%i" % (k1, p2)
-                        if m1 not in mol_info:
-                            mol_info[m1] = [key]
-                        else:
-                            mol_info[m1].append(key)
-            # Now between molecule lists
-            for dict_ind2, (k2, v2) in enumerate(self.rxns.items()):
-                if dict_ind2 > dict_ind1:
-                    for p1, m1 in enumerate(v1):
-                        for p2, m2 in enumerate(v2):
-                            if abs(p1 - p2) % 2 == 0 and equal(m1, m2):
-                                key = "%s_sep_%i" % (k2, p2)
-                                if m1 not in mol_info:
-                                    mol_info[m1] = [key]
-                                else:
-                                    mol_info[m1].append(key)
-        # Unifying between the mol_info keys
-        same_Ms = []
-        for i, M1 in enumerate(mol_info):
-            for j, M2 in enumerate(mol_info):
-                if j > i and equal(M1, M2):
-                    same_Ms.append([M1, M2])
-
-        for Ms in same_Ms:
-            if Ms[0] and Ms[-1] in mol_info:
-                appending_list = mol_info.pop(Ms[-1])
-                for keys in appending_list:
-                    mol_info[Ms[0]].append(keys)
-
-        # Modifying temp_rxn based on the keys
-        for M, keys in mol_info.items():
-            for key in keys:
-                frames, ind = key.split("_sep_")
-                ind = int(ind)
-                temp_rxn[frames][ind] = M
-        self.rxns = temp_rxn
-
-    def reduce(self):
-        """
-        Reduce A-B-C-C-D-F to A-B-C-D-F
-        """
-        reduced = {}
-        for k, v in self.rxns.items():
-            reduced_list = []
-            for i in range(len(v)):
-                if i == 0 or i == len(v) - 1:
-                    reduced_list.append(v[i])
-                elif i % 3 == 2:
-                    E1 = v[i].qm_energies[0]
-                    E2 = v[i + 1].qm_energies[0]
-                    if E1 < E2:
-                        reduced_list.append(v[i])
-                    else:
-                        reduced_list.append(v[i + 1])
-                elif i % 3 == 0:
-                    continue
-                else:
-                    reduced_list.append(v[i])
-            reduced[k] = reduced_list
-        self.rxns = reduced
+        rxn_list =  copy.deepcopy(list(self.rxns.values()))
+        unique_pairs = list(itertools.combinations(enumerate(rxn_list), 2))
+        skipping = []
+        for (i, u_rxn1), (j, u_rxn2) in unique_pairs:
+            M_list = [u_rxn1[0], u_rxn1[-1], u_rxn2[0], u_rxn2[-1]]
+            M_index = [0,-1,0,-1]
+            TS1, TS2 = u_rxn1[1], u_rxn2[1]
+            for (k, M1), (l,M2) in list(itertools.combinations(enumerate(M_list),2)):
+                if M1 not in skipping:
+                    if equal(M1, M2):
+                        rxn_list[j][M_index[l]] = M1
+                        skipping.append(M2)
+            if TS1 not in skipping and equal(TS1, TS2):
+                rxn_list[j][1] = TS1
+                skipping.append(TS2)
+        self.unique_rxns = rxn_list
 
     def build(self):
         temp_G = nx.Graph()
-        self.reduce()
         self.unify()
-        for k, v in self.rxns.items():
-            for i in range(len(v)):
+        for v in self.unique_rxns:
+            for i, M in enumerate(v):
                 if i % 2 != 1:
                     atoms = []
                     for atom in v[i].elem:
@@ -186,7 +132,7 @@ class BuildGraph(object):
 
                 if i != len(v) - 1:
                     temp_G.add_edge(v[i], v[i + 1])
-            self.G = nx.compose(self.G, temp_G)
+        self.G = nx.compose(self.G, temp_G)
 
         return self.G
 
@@ -312,165 +258,165 @@ def compare_rxns(rxn1, rxn2, threshold):
     return False
 
 
-def check_repeat(M, threshold):
-    """
-    Check whether there is a repeating pattern such as BCB in ABCBD. If we allow this pattern, reaction pathway can grow infinitely.
-    """
-    if len(M) <= 6:
-        return False
-
-    for i in range(len(M)):
-        if i % 3 == 0:
-            for j in range(int(len(M) / 3)):
-                if j * 3 > i:
-                    if equal(M[i], M[j * 3], threshold) or equal(
-                        M[i], M[-1], threshold
-                    ):
-                        return True
-    return False
-
-
-def filterTS(M_info, E1):
-    """ """
-    temp = copy.deepcopy(M_info)
-    for k, v in M_info.items():
-        num = int(len(v) / 3)
-        Final_E = float(v[-1].qm_energies[0])
-        if Final_E > E1:
-            print("Exothermic! We are keeping it.")
-            continue
-        for i in range(num):
-            Rct_E = float(v[i * 3].qm_energies[0])
-
-            TS_E = float(v[i * 3 + 1].qm_energies[0])
-
-            Prd_E = float(v[i * 3 + 2].qm_energies[0])
-
-            if TS_E > Rct_E and TS_E > Prd_E:
-                if TS_E > E1:
-                    del temp[k]
-                    break
-            else:
-                print("Something is wrong")
-
-    return M_info
-
-
-def connect_rxns(M_info, iteration=0, outsiders=OrderedDict(), threshold=0.05):
-    """
-    This function will connect unit reactions.
-
-    Parameters
-    ----------
-    M_info : OrderedDict
-        OrderedDict with frames in key and Molcule objects in a list [reactant, TS, product]
-
-    iteration : int
-        Number of iteration
-
-    outsider : OrderedDict
-        Reaction pathways that don't make any connections
-
-    Return
-    ----------
-    final : OrderedDict
-        Molecule objects consist of unit reactions
-    """
-
-    rxns = OrderedDict()
-    temp = copy.deepcopy(M_info)
-    connect = 0
-    print("-----------------Iteration: %i-----------------" % iteration)
-    print("Detecting connection points..")
-    for i, (k1, v1) in enumerate(M_info.items()):
-        for j, (k2, v2) in enumerate(M_info.items()):
-            if j > i:
-                if compare_rxns(v1, v2, threshold):
-                    # Removing identical reaction pathways
-                    if len(v1) >= len(v2) and k2 in temp.keys():
-                        del temp[k2]
-                    elif len(v1) < len(v2) and k1 in temp.keys():
-                        del temp[k1]
-                    continue
-
-                reac1 = v1[0]
-                prod1 = v1[-1]
-                reac2 = v2[0]
-                prod2 = v2[-1]
-                frm = k1 + "/" + k2
-                if equal(reac1, reac2, threshold):
-                    M = v2[::-1] + v1
-                    if check_repeat(M, threshold):
-                        continue
-                    else:
-                        try:
-                            del temp[k1], temp[k2]
-                        except:
-                            pass
-                        rxns[frm] = M
-                        connect += 1
-
-                elif equal(reac1, prod2, threshold):
-                    M = v2 + v1
-                    if check_repeat(M, threshold):
-                        continue
-                    else:
-                        try:
-                            del temp[k1], temp[k2]
-                        except:
-                            pass
-                        rxns[frm] = M
-                        connect += 1
-
-                elif equal(prod1, reac2, threshold):
-                    M = v1 + v2
-                    if check_repeat(M, threshold):
-                        continue
-                    else:
-                        try:
-                            del temp[k1], temp[k2]
-                        except:
-                            pass
-                        rxns[frm] = M
-                        connect += 1
-
-                elif equal(prod1, prod2, threshold):
-                    M = v1 + v2[::-1]
-                    if check_repeat(M, threshold):
-                        continue
-                    else:
-                        try:
-                            del temp[k1], temp[k2]
-                        except:
-                            pass
-                        rxns[frm] = M
-                        connect += 1
-
-    outsiders.update(temp)
-    print("Number of connections made", connect)
-    print("Number of reactions in rxns", len(rxns))
-    print("Number of outsiders", len(outsiders))
-    if connect == 0:
-        rxns.update(outsiders)
-    final = copy.deepcopy(rxns)
-    print("Numer of reactions saved", len(final))
-    print("Cleaning..")
-    for i, (k1, v1) in enumerate(rxns.items()):
-        for j, (k2, v2) in enumerate(rxns.items()):
-            if j > i:
-                # if len(v1) == 3 and len(v2) == 3:
-                if compare_rxns(v1, v2, threshold):
-                    if len(v1) >= len(v2) and k2 in final.keys():
-                        del final[k2]
-                    elif len(v1) < len(v2) and k1 in final.keys():
-                        del final[k1]
-    print("After cleaning", len(final))
-    iteration += 1
-    if connect == 0:
-        print("Done! %i reactions detected." % len(final))
-        return final
-    else:
-        return connect_rxns(final, iteration, outsiders, threshold)
+#def check_repeat(M, threshold):
+#    """
+#    Check whether there is a repeating pattern such as BCB in ABCBD. If we allow this pattern, reaction pathway can grow infinitely.
+#    """
+#    if len(M) <= 6:
+#        return False
+#
+#    for i in range(len(M)):
+#        if i % 3 == 0:
+#            for j in range(int(len(M) / 3)):
+#                if j * 3 > i:
+#                    if equal(M[i], M[j * 3], threshold) or equal(
+#                        M[i], M[-1], threshold
+#                    ):
+#                        return True
+#    return False
+#
+#
+#def filterTS(M_info, E1):
+#    """ """
+#    temp = copy.deepcopy(M_info)
+#    for k, v in M_info.items():
+#        num = int(len(v) / 3)
+#        Final_E = float(v[-1].qm_energies[0])
+#        if Final_E > E1:
+#            print("Exothermic! We are keeping it.")
+#            continue
+#        for i in range(num):
+#            Rct_E = float(v[i * 3].qm_energies[0])
+#
+#            TS_E = float(v[i * 3 + 1].qm_energies[0])
+#
+#            Prd_E = float(v[i * 3 + 2].qm_energies[0])
+#
+#            if TS_E > Rct_E and TS_E > Prd_E:
+#                if TS_E > E1:
+#                    del temp[k]
+#                    break
+#            else:
+#                print("Something is wrong")
+#
+#    return M_info
+#
+#
+#def connect_rxns(M_info, iteration=0, outsiders=OrderedDict(), threshold=0.05):
+#    """
+#    This function will connect unit reactions.
+#
+#    Parameters
+#    ----------
+#    M_info : OrderedDict
+#        OrderedDict with frames in key and Molcule objects in a list [reactant, TS, product]
+#
+#    iteration : int
+#        Number of iteration
+#
+#    outsider : OrderedDict
+#        Reaction pathways that don't make any connections
+#
+#    Return
+#    ----------
+#    final : OrderedDict
+#        Molecule objects consist of unit reactions
+#    """
+#
+#    rxns = OrderedDict()
+#    temp = copy.deepcopy(M_info)
+#    connect = 0
+#    print("-----------------Iteration: %i-----------------" % iteration)
+#    print("Detecting connection points..")
+#    for i, (k1, v1) in enumerate(M_info.items()):
+#        for j, (k2, v2) in enumerate(M_info.items()):
+#            if j > i:
+#                if compare_rxns(v1, v2, threshold):
+#                    # Removing identical reaction pathways
+#                    if len(v1) >= len(v2) and k2 in temp.keys():
+#                        del temp[k2]
+#                    elif len(v1) < len(v2) and k1 in temp.keys():
+#                        del temp[k1]
+#                    continue
+#
+#                reac1 = v1[0]
+#                prod1 = v1[-1]
+#                reac2 = v2[0]
+#                prod2 = v2[-1]
+#                frm = k1 + "/" + k2
+#                if equal(reac1, reac2, threshold):
+#                    M = v2[::-1] + v1
+#                    if check_repeat(M, threshold):
+#                        continue
+#                    else:
+#                        try:
+#                            del temp[k1], temp[k2]
+#                        except:
+#                            pass
+#                        rxns[frm] = M
+#                        connect += 1
+#
+#                elif equal(reac1, prod2, threshold):
+#                    M = v2 + v1
+#                    if check_repeat(M, threshold):
+#                        continue
+#                    else:
+#                        try:
+#                            del temp[k1], temp[k2]
+#                        except:
+#                            pass
+#                        rxns[frm] = M
+#                        connect += 1
+#
+#                elif equal(prod1, reac2, threshold):
+#                    M = v1 + v2
+#                    if check_repeat(M, threshold):
+#                        continue
+#                    else:
+#                        try:
+#                            del temp[k1], temp[k2]
+#                        except:
+#                            pass
+#                        rxns[frm] = M
+#                        connect += 1
+#
+#                elif equal(prod1, prod2, threshold):
+#                    M = v1 + v2[::-1]
+#                    if check_repeat(M, threshold):
+#                        continue
+#                    else:
+#                        try:
+#                            del temp[k1], temp[k2]
+#                        except:
+#                            pass
+#                        rxns[frm] = M
+#                        connect += 1
+#
+#    outsiders.update(temp)
+#    print("Number of connections made", connect)
+#    print("Number of reactions in rxns", len(rxns))
+#    print("Number of outsiders", len(outsiders))
+#    if connect == 0:
+#        rxns.update(outsiders)
+#    final = copy.deepcopy(rxns)
+#    print("Numer of reactions saved", len(final))
+#    print("Cleaning..")
+#    for i, (k1, v1) in enumerate(rxns.items()):
+#        for j, (k2, v2) in enumerate(rxns.items()):
+#            if j > i:
+#                # if len(v1) == 3 and len(v2) == 3:
+#                if compare_rxns(v1, v2, threshold):
+#                    if len(v1) >= len(v2) and k2 in final.keys():
+#                        del final[k2]
+#                    elif len(v1) < len(v2) and k1 in final.keys():
+#                        del final[k1]
+#    print("After cleaning", len(final))
+#    iteration += 1
+#    if connect == 0:
+#        print("Done! %i reactions detected." % len(final))
+#        return final
+#    else:
+#        return connect_rxns(final, iteration, outsiders, threshold)
 
 
 def main():
@@ -512,20 +458,17 @@ def main():
 
     cwd = os.getcwd()
     dirs = os.scandir(cwd)
-    result = collect(dirs)
-    start = time.time()
-    rxns = connect_rxns(result, args.rmsd)
-
-    print("Connecting took %f seconds" % (time.time() - start))
+    rxns = collect(dirs)
+    #rxns = connect_rxns(result, args.rmsd)
 
     if not os.path.exists("reactions"):
         os.mkdir("reactions")
 
-    for i, (k, v) in enumerate(rxns.items()):
-        Mol = copy.deepcopy(v[0])
-        for j in range(len(v) - 1):
-            Mol += v[j + 1]
-        Mol.write("reactions/%i_%i.xyz" % (i, len(Mol)))
+    #for i, (k, v) in enumerate(rxns.items()):
+    #    Mol = copy.deepcopy(v[0])
+    #    for j in range(len(v) - 1):
+    #        Mol += v[j + 1]
+    #    Mol.write("reactions/%i_%i.xyz" % (i, len(Mol)))
 
     G = BuildGraph(rxns, args.charge).build()
     subs = [G.subgraph(c).copy() for c in nx.connected_components(G)]

@@ -1,0 +1,45 @@
+You are running Q-Chem version: 5.0.2
+
+#
+# job setting
+#
+local host:  c8-66
+current dir: /home/hpark21/research/sphere/test/pyridine/pyridine_original/418/gathered/reactions/reaction_001/Reaction/pathways/075-155/FS
+input file:  irc_product.in
+output file: irc_product.out
+nprocs     : 1
+nthreads   : 4
+#
+# qchem installation setting
+#
+QC:          /home/leeping/opt/qchem/5.0.2-openmp
+QCAUX:       /home/leeping/opt/qchem/5.0.2-openmp/qcaux
+QCPROG:      /home/leeping/opt/qchem/5.0.2-openmp/exe/qcprog.exe
+QCPROG_S:    /home/leeping/opt/qchem/5.0.2-openmp/exe/qcprog.exe_s
+PARALLEL:    FALSE
+QCMPI:       
+#
+# qchem directory setting
+#
+qcrun:       irc_product.d
+QCSCRATCH:   .
+QCLOCALSCR:  
+QCTMPDIR:    .
+QCFILEPREF:  ./irc_product.d
+QCSAVEDIR:   ./irc_product.d
+workdirs:    ./irc_product.d
+workdir0:    ./irc_product.d
+partmpdirs =  ./irc_product.d.0 
+#
+# parallel setting
+#
+QCRSH:           ssh
+QCMPI:           mpich
+QCMPIRUN:        /home/leeping/opt/qchem/5.0.2-openmp/bin/mpi/mpirun_qchem
+QCMACHINEFILE:   /home/leeping/opt/qchem/5.0.2-openmp/bin/mpi/machines
+
+
+#
+# env setting
+#
+exported envs:   QC QCAUX QCSCRATCH QCRUNNAME QCFILEPREF QCPROG QCPROG_S GUIFILE
