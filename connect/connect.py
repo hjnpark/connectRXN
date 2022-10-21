@@ -65,14 +65,14 @@ class BuildGraph(object):
     def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
 
-        rxn_list =  copy.deepcopy(list(self.rxns.values()))
+        rxn_list = copy.deepcopy(list(self.rxns.values()))
         unique_pairs = list(itertools.combinations(enumerate(rxn_list), 2))
         skipping = []
         for (i, u_rxn1), (j, u_rxn2) in unique_pairs:
             M_list = [u_rxn1[0], u_rxn1[-1], u_rxn2[0], u_rxn2[-1]]
-            M_index = [0,-1,0,-1]
+            M_index = [0, -1, 0, -1]
             TS1, TS2 = u_rxn1[1], u_rxn2[1]
-            for (k, M1), (l,M2) in list(itertools.combinations(enumerate(M_list),2)):
+            for (k, M1), (l, M2) in list(itertools.combinations(enumerate(M_list), 2)):
                 if M1 not in skipping:
                     if equal(M1, M2):
                         rxn_list[j][M_index[l]] = M1
@@ -119,19 +119,24 @@ class BuildGraph(object):
                         E=round(float(v[i].qm_energies[0]), 5),
                         color="green",
                     )
-                else:
-                    temp_G.add_node(
-                        v[i],
-                        # smiles=smiles,
-                        # image=os.path.join(
-                        #    "2D_images", smiles.replace("/", "_") + ".png"
-                        # ),
-                        E=round(float(v[i].qm_energies[0]), 5),
-                        color="red",
-                    )
+                # else:
+                #    temp_G.add_node(
+                #        v[i],
+                #        # smiles=smiles,
+                #        # image=os.path.join(
+                #        #    "2D_images", smiles.replace("/", "_") + ".png"
+                #        # ),
+                #        E=round(float(v[i].qm_energies[0]), 5),
+                #        color="red",
+                #    )
 
-                if i != len(v) - 1:
-                    temp_G.add_edge(v[i], v[i + 1])
+                if i == 2:
+                    temp_G.add_edge(
+                        v[i],
+                        v[i - 2],
+                        Molecule=v[i - 1],
+                        E=round(float(v[i - 1].qm_energies[0]), 5),
+                    )
         self.G = nx.compose(self.G, temp_G)
 
         return self.G
@@ -258,7 +263,7 @@ def compare_rxns(rxn1, rxn2, threshold):
     return False
 
 
-#def check_repeat(M, threshold):
+# def check_repeat(M, threshold):
 #    """
 #    Check whether there is a repeating pattern such as BCB in ABCBD. If we allow this pattern, reaction pathway can grow infinitely.
 #    """
@@ -276,7 +281,7 @@ def compare_rxns(rxn1, rxn2, threshold):
 #    return False
 #
 #
-#def filterTS(M_info, E1):
+# def filterTS(M_info, E1):
 #    """ """
 #    temp = copy.deepcopy(M_info)
 #    for k, v in M_info.items():
@@ -302,7 +307,7 @@ def compare_rxns(rxn1, rxn2, threshold):
 #    return M_info
 #
 #
-#def connect_rxns(M_info, iteration=0, outsiders=OrderedDict(), threshold=0.05):
+# def connect_rxns(M_info, iteration=0, outsiders=OrderedDict(), threshold=0.05):
 #    """
 #    This function will connect unit reactions.
 #
@@ -459,12 +464,12 @@ def main():
     cwd = os.getcwd()
     dirs = os.scandir(cwd)
     rxns = collect(dirs)
-    #rxns = connect_rxns(result, args.rmsd)
+    # rxns = connect_rxns(result, args.rmsd)
 
     if not os.path.exists("reactions"):
         os.mkdir("reactions")
 
-    #for i, (k, v) in enumerate(rxns.items()):
+    # for i, (k, v) in enumerate(rxns.items()):
     #    Mol = copy.deepcopy(v[0])
     #    for j in range(len(v) - 1):
     #        Mol += v[j + 1]
@@ -476,39 +481,42 @@ def main():
         os.mkdir("graphs")
 
     for i, G in enumerate(subs):
-        E_dict = {}
-        Es = nx.get_node_attributes(G, "E")
+        #    E_dict = {}
+        #    Es = nx.get_node_attributes(G, "E")
 
-        for M in G.nodes():
-            E = Es[M]
-            if E not in E_dict:
-                E_dict[E] = [M]
-            else:
-                E_dict[E].append(M)
+        #    for M in G.nodes():
+        #        E = Es[M]
+        #        if E not in E_dict:
+        #            E_dict[E] = [M]
+        #        else:
+        #            E_dict[E].append(M)
 
-        for k, v in E_dict.items():
-            sub_dir = "subgraph_%i" % i
-            e_dir = os.path.join(sub_dir, str(abs(k)))
+        #    for k, v in E_dict.items():
+        #        sub_dir = "subgraph_%i" % i
+        #        e_dir = os.path.join(sub_dir, str(abs(k)))
 
-            if len(v) > 1:
-                if not os.path.exists(sub_dir):
-                    os.mkdir(sub_dir)
-                if not os.path.exists(e_dir):
-                    os.mkdir(e_dir)
+        #        if len(v) > 1:
+        #            if not os.path.exists(sub_dir):
+        #                os.mkdir(sub_dir)
+        #            if not os.path.exists(e_dir):
+        #                os.mkdir(e_dir)
 
-                for M_i, M in enumerate(v):
-                    print(e_dir)
-                    print(M)
-                    M.write(os.path.join(e_dir, "%i.xyz" % M_i))
+        #            for M_i, M in enumerate(v):
+        #                M.write(os.path.join(e_dir, "%i.xyz" % M_i))
 
-        pos = nx.spring_layout(G, iterations=1000)
+        pos = nx.spring_layout(G, k = 1/np.sqrt(G.number_of_nodes()/5), iterations=1000)
         fig, ax = plt.subplots(figsize=(args.figsize, args.figsize))
         # images = nx.get_node_attributes(G, "image")
         colors = nx.get_node_attributes(G, "color")
         # smiles = nx.get_node_attributes(G, "smiles")
         nx.draw(G, pos=pos, node_color=colors.values(), with_labels=False)
-        nodenames = {n: "%f" % Es[n] for n in G.nodes()}
-        nx.draw_networkx_labels(G, pos=pos, labels=nodenames, font_weight="bold")
+        # node_labels = {n: "%f" % Es[n] for n in G.nodes()}
+        node_labels = nx.get_node_attributes(G, "E")
+        edge_labels = nx.get_edge_attributes(G, "E")
+        nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_weight="bold")
+        nx.draw_networkx_edge_labels(
+            G, pos, edge_labels=edge_labels, font_weight="bold"
+        )
         plt.savefig(os.path.join("graphs", "graph_%i.png" % i))
 
         tr_figure = ax.transData.transform
@@ -523,27 +531,25 @@ def main():
         img_center = img_size / 2
 
         for n in G.nodes:
-            if colors[n] != "red":
-                xf, yf = tr_figure(pos[n])
-                xa, ya = tr_axes((xf, yf))
-                a = plt.axes(
-                    [
-                        xa - img_center + args.imgx,
-                        ya - img_center * 2.0 + args.imgy,
-                        img_size,
-                        img_size,
-                    ]
-                )
-                mol_img = plt.imread(G.nodes[n]["image"])
+            # if colors[n] != "red":
+            xf, yf = tr_figure(pos[n])
+            xa, ya = tr_axes((xf, yf))
+            a = plt.axes(
+                [
+                    xa - img_center + args.imgx,
+                    ya - img_center * 2.0 + args.imgy,
+                    img_size,
+                    img_size,
+                ]
+            )
+            mol_img = plt.imread(G.nodes[n]["image"])
 
-                imgshape = mol_img.shape
-                alpha = np.zeros(imgshape)[:, :, 0]
-                alpha[np.where(mol_img[:, :, 0] != 1)] = 1
-                mol_img = np.dstack(
-                    (mol_img, alpha.reshape(imgshape[0], imgshape[1], 1))
-                )
-                a.imshow(mol_img)
-                a.axis("off")
+            imgshape = mol_img.shape
+            alpha = np.zeros(imgshape)[:, :, 0]
+            alpha[np.where(mol_img[:, :, 0] != 1)] = 1
+            mol_img = np.dstack((mol_img, alpha.reshape(imgshape[0], imgshape[1], 1)))
+            a.imshow(mol_img)
+            a.axis("off")
 
         plt.savefig("graph_PES_%i.png" % i)
 
