@@ -9,6 +9,7 @@ from collections import OrderedDict
 import tarfile
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib import colors
 
 from xyz2mol import xyz2mol
 from rdkit import Chem
@@ -36,20 +37,21 @@ def equal(m1, m2, threshold=0.05):
         return False
     minimum_rmsd = min_rmsd(m1, m2)[0]
 
-    import random
+    # To check whether this function works well, writes xyz file so their geometries can be manually investigated.
+    #import random
 
-    rand_int = random.randint(0, 100)
-    if minimum_rmsd < threshold and rand_int == 50:
-        M = m1 + m2
-        M.align()
-        if not os.path.exists("low_rmsd"):
-            os.mkdir("low_rmsd")
-        M.comms = [
-            "Minimum RMSD between the two molecules is %f Angstrom" % minimum_rmsd,
-            "",
-        ]
-        mol_num = (len(os.listdir("low_rmsd"))) + 1
-        M.write("low_rmsd/%i.xyz" % mol_num)
+    #rand_int = random.randint(0, 100)
+    #if minimum_rmsd < threshold and rand_int == 50:
+    #    M = m1 + m2
+    #    M.align()
+    #    if not os.path.exists("low_rmsd"):
+    #        os.mkdir("low_rmsd")
+    #    M.comms = [
+    #        "Minimum RMSD between the two molecules is %f Angstrom" % minimum_rmsd,
+    #        "",
+    #    ]
+    #    mol_num = (len(os.listdir("low_rmsd"))) + 1
+    #    M.write("low_rmsd/%i.xyz" % mol_num)
 
     return minimum_rmsd < threshold
 
@@ -69,7 +71,7 @@ class BuildGraph(object):
 
     def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
-        print("Detecting different molecules objects with same geometries and unifying them.")
+        print("Detecting different molecule objects with same geometries and unifying them.")
         rxn_list = copy.deepcopy(list(self.rxns.values()))
         unique_pairs = list(itertools.combinations(enumerate(rxn_list), 2))
         skipping = []
@@ -126,12 +128,13 @@ class BuildGraph(object):
                         str(hash(v[i])),
                         smiles=smiles,
                         #molecule=v[i],
+                        E=round((v[i].qm_energies[0]-self.lowest_E)*au2kcal, 1),
                         image=os.path.join(
                             "2D_images", smiles.replace("/", "_") + ".png"
                         ),
                         label=str(round((v[i].qm_energies[0]-self.lowest_E)*au2kcal, 1)),#kcal/mol
                         size= 15,
-                        #color="green",
+                        color="green",
                     )
                 # else:
                 #    temp_G.add_node(
@@ -220,62 +223,6 @@ def collect(dirs):
     print("Collecting is done. %i unit reactions are ready." % len(result))
     return result
 
-
-def compare_rxns(rxn1, rxn2, threshold):
-    """
-    Checking to see whether two reaction pathways are the same.
-
-    parameters
-    ----------
-    rxn1, rxn2: [Molecule objects]
-        Molecule objects reactant, TS, and product in a list.
-
-    Return
-    ----------
-    "True" if they are identical.
-    "False" if they are different.
-    """
-    L1 = len(rxn1)
-    L2 = len(rxn2)
-    rxns = {L1: rxn1, L2: rxn2}
-    # if L1 != L2:
-    #     return False
-    if L1 == L2:
-        equal_count = 0
-        for M1, M2 in zip(rxn1, rxn2):
-            if equal(M1, M2, threshold):
-                equal_count += 1
-
-        if equal_count == L1:
-            return True
-
-        equal_count = 0
-        for M1, M2 in zip(rxn1[::-1], rxn2):
-            if equal(M1, M2, threshold):
-                equal_count += 1
-
-        if equal_count == L1:
-            return True
-    else:
-        shorter = rxns[min(rxns)]
-        longer = rxns[max(rxns)]
-        ite_num = int(abs(L1 / 3 - L2 / 3) + 1)
-        equal_count = 0
-        for i in range(ite_num):
-            for M1, M2 in zip(shorter, longer[i * 3 :]):
-                if equal(M1, M2, threshold):
-                    equal_count += 1
-                    if equal_count == min(L1, L2):
-                        return True
-
-            for M1, M2 in zip(shorter, longer[i * 3 :][::-1]):
-                if equal(M1, M2, threshold):
-                    equal_count += 1
-                    if equal_count == min(L1, L2):
-                        return True
-
-    return False
-
 def main():
     import argparse
 
@@ -287,101 +234,38 @@ def main():
         default=0.05,
         help="If RMSD of two aligned molecule's Cartesian coordinate is better than this threshold, the two molecules are considered different",
     )
-    parser.add_argument(
-        "--figsize",
-        type=float,
-        default=15.0,
-        help="Size of potential energy surface graphs (inches)",
-    )
-    parser.add_argument(
-        "--imgsize",
-        type=float,
-        default=1.0,
-        help="Bigger number will generate bigger 2D molecular images for graphs with more than 3 nodes",
-    )
-    parser.add_argument(
-        "--imgx",
-        type=float,
-        default=0.0,
-        help="Adjust x-axis of 2D molecular images (relative to figsize)",
-    )
-    parser.add_argument(
-        "--imgy",
-        type=float,
-        default=0.0,
-        help="Adjust y-axis of 2D molecular images (relative to figsize)",
-    )
+    #parser.add_argument(
+    #    "--figsize",
+    #    type=float,
+    #    default=15.0,
+    #    help="Size of potential energy surface graphs (inches)",
+    #)
     args = parser.parse_args(sys.argv[1:])
 
     cwd = os.getcwd()
     dirs = os.scandir(cwd)
     rxns = collect(dirs)
 
-    if not os.path.exists("reactions"):
-        os.mkdir("reactions")
-
     BuildG = BuildGraph(rxns, args.charge)
 
     G = BuildG.build()
-    E_range = [BuildG.lowest_E, BuildG.highest_E]
-    #subs = [G.subgraph(c).copy() for c in nx.connected_components(G)]
-    #if not os.path.exists("graphs"):
-    #    os.mkdir("graphs")
 
-    #for i, G in enumerate(subs):
-    #pos = nx.spring_layout(G, k = 1/np.sqrt(G.number_of_nodes()/5), iterations=1000)
-    #fig, ax = plt.subplots(figsize=(args.figsize, args.figsize))
-    # images = nx.get_node_attributes(G, "image")
-    # colors = nx.get_node_attributes(G, "color")
-    # smiles = nx.get_node_attributes(G, "smiles")
-    #nx.draw(G, pos=pos, node_color=colors.values(), with_labels=False)
-    for node in G.nodes:
-        pass
+    Energies = list(G.nodes.data('E'))
+    Energies.sort(key=lambda a: a[1])
+    norm_factor = Energies[-1][-1]
+
+    rgb1 = np.array(colors.to_rgb('#00B2FF'))
+    rgb2 = np.array(colors.to_rgb('#FF0000'))
+
+    color_hex = [colors.to_hex((1-a[-1]/norm_factor)*rgb1 + (a[-1]/norm_factor)*rgb2) for a in Energies]
+
+    for i, E in enumerate(Energies):
+        G.nodes[E[0]]['color'] = color_hex[i]
+
     nt = Network('1000px', '1000px')
     nt.from_nx(G)
     nt.toggle_physics(True)
-    nt.show('test.html')
-    # node_labels = {n: "%f" % Es[n] for n in G.nodes()}
-    #node_labels = nx.get_node_attributes(G, "E")
-    #edge_labels = nx.get_edge_attributes(G, "E")
-    #nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_weight="bold")
-    #nx.draw_networkx_edge_labels(
-    #    G, pos, edge_labels=edge_labels, font_weight="bold"
-    #)
-    #plt.savefig(os.path.join("graphs", "graph_%i.png" % i))
-
-    #tr_figure = ax.transData.transform
-    #tr_axes = fig.transFigure.inverted().transform
-    #nnodes = G.number_of_nodes()
-
-    #if nnodes == 3:
-    #    img_size = 0.15
-    #else:
-    #    img_size = 0.15 / (np.sqrt(nnodes / 3)) * args.imgsize
-
-    #img_center = img_size / 2
-
-    #for n in G.nodes:
-    #    xf, yf = tr_figure(pos[n])
-    #    xa, ya = tr_axes((xf, yf))
-    #    a = plt.axes(
-    #        [
-    #            xa - img_center + args.imgx,
-    #            ya - img_center * 2.0 + args.imgy,
-    #            img_size,
-    #            img_size,
-    #        ]
-    #    )
-    #    mol_img = plt.imread(G.nodes[n]["image"])
-
-    #    imgshape = mol_img.shape
-    #    alpha = np.zeros(imgshape)[:, :, 0]
-    #    alpha[np.where(mol_img[:, :, 0] != 1)] = 1
-    #    mol_img = np.dstack((mol_img, alpha.reshape(imgshape[0], imgshape[1], 1)))
-    #    a.imshow(mol_img)
-    #    a.axis("off")
-
-    #plt.savefig("graph_PES_%i.png" % i)
+    nt.show('test_color.html')
 
     print("Done!")
 

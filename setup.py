@@ -20,6 +20,7 @@ setup(
         'numpy>=1.20',
         'networkx',
         'matplotlib',
+        'pyvis',
         'rdkit',
     ],
     classifiers=[
