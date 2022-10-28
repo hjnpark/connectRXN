@@ -2,6 +2,7 @@
 import numpy as np
 import sys, os, copy, itertools
 
+from pyvis.network import Network
 from calc_rmsd.permutation_invariant_rmsd import min_rmsd
 from .molecule import Molecule, TopEqual, Elements
 from collections import OrderedDict
@@ -13,6 +14,8 @@ from xyz2mol import xyz2mol
 from rdkit import Chem
 from rdkit.Chem import Draw
 
+au2kcal = 627.5094740630558
+au2kj = 2625.4996394798254
 
 def equal(m1, m2, threshold=0.05):
     """
@@ -61,10 +64,12 @@ class BuildGraph(object):
         self.rxns = rxns
         self.charge = charge
         self.unique_rxns = []
+        self.lowest_E = 0.0
+        self.highest_E = 0.0
 
     def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
-
+        print("Detecting different molecules objects with same geometries and unifying them.")
         rxn_list = copy.deepcopy(list(self.rxns.values()))
         unique_pairs = list(itertools.combinations(enumerate(rxn_list), 2))
         skipping = []
@@ -74,9 +79,15 @@ class BuildGraph(object):
             TS1, TS2 = u_rxn1[1], u_rxn2[1]
             for (k, M1), (l, M2) in list(itertools.combinations(enumerate(M_list), 2)):
                 if M1 not in skipping:
+                    if M1.qm_energies[0] < self.lowest_E or M1.qm_energies[0] < self.lowest_E:
+                        self.lowest_E = min(M1.qm_energies[0], M2.qm_energies[0])
+                    if M1.qm_energies[0] < self.highest_E or M1.qm_energies[0] < self.highest_E:
+                        self.highest_E = min(M1.qm_energies[0], M2.qm_energies[0])
+
                     if equal(M1, M2):
                         rxn_list[j][M_index[l]] = M1
                         skipping.append(M2)
+
             if TS1 not in skipping and equal(TS1, TS2):
                 rxn_list[j][1] = TS1
                 skipping.append(TS2)
@@ -85,6 +96,7 @@ class BuildGraph(object):
     def build(self):
         temp_G = nx.Graph()
         self.unify()
+        print("Building the graph...")
         for v in self.unique_rxns:
             for i, M in enumerate(v):
                 if i % 2 != 1:
@@ -111,13 +123,15 @@ class BuildGraph(object):
                             "WARNING: A node is missing SMILES. Probably from a wrong charge... This needs to be fixed"
                         )
                     temp_G.add_node(
-                        v[i],
+                        str(hash(v[i])),
                         smiles=smiles,
+                        #molecule=v[i],
                         image=os.path.join(
                             "2D_images", smiles.replace("/", "_") + ".png"
                         ),
-                        E=round(float(v[i].qm_energies[0]), 5),
-                        color="green",
+                        label=str(round((v[i].qm_energies[0]-self.lowest_E)*au2kcal, 1)),#kcal/mol
+                        size= 15,
+                        #color="green",
                     )
                 # else:
                 #    temp_G.add_node(
@@ -132,10 +146,10 @@ class BuildGraph(object):
 
                 if i == 2:
                     temp_G.add_edge(
-                        v[i],
-                        v[i - 2],
-                        Molecule=v[i - 1],
-                        E=round(float(v[i - 1].qm_energies[0]), 5),
+                        str(hash(v[i])),
+                        str(hash(v[i - 2])),
+                        #molecule=v[i - 1],
+                        label=str(round((v[i-1].qm_energies[0]-self.lowest_E)*au2kcal, 1)),
                     )
         self.G = nx.compose(self.G, temp_G)
 
@@ -191,9 +205,9 @@ def collect(dirs):
                             prod.build_bonds()
                             prod.build_topology()
 
-                            react.qm_energies = [react.comms[0].split()[5]]
-                            ts.qm_energies = [ts.comms[0].split()[-1]]
-                            prod.qm_energies = [prod.comms[0].split()[5]]
+                            react.qm_energies = [float(react.comms[0].split()[5])]
+                            ts.qm_energies = [float(ts.comms[0].split()[-1])]
+                            prod.qm_energies = [float(prod.comms[0].split()[5])]
 
                             key = (
                                 d.name
@@ -262,168 +276,6 @@ def compare_rxns(rxn1, rxn2, threshold):
 
     return False
 
-
-# def check_repeat(M, threshold):
-#    """
-#    Check whether there is a repeating pattern such as BCB in ABCBD. If we allow this pattern, reaction pathway can grow infinitely.
-#    """
-#    if len(M) <= 6:
-#        return False
-#
-#    for i in range(len(M)):
-#        if i % 3 == 0:
-#            for j in range(int(len(M) / 3)):
-#                if j * 3 > i:
-#                    if equal(M[i], M[j * 3], threshold) or equal(
-#                        M[i], M[-1], threshold
-#                    ):
-#                        return True
-#    return False
-#
-#
-# def filterTS(M_info, E1):
-#    """ """
-#    temp = copy.deepcopy(M_info)
-#    for k, v in M_info.items():
-#        num = int(len(v) / 3)
-#        Final_E = float(v[-1].qm_energies[0])
-#        if Final_E > E1:
-#            print("Exothermic! We are keeping it.")
-#            continue
-#        for i in range(num):
-#            Rct_E = float(v[i * 3].qm_energies[0])
-#
-#            TS_E = float(v[i * 3 + 1].qm_energies[0])
-#
-#            Prd_E = float(v[i * 3 + 2].qm_energies[0])
-#
-#            if TS_E > Rct_E and TS_E > Prd_E:
-#                if TS_E > E1:
-#                    del temp[k]
-#                    break
-#            else:
-#                print("Something is wrong")
-#
-#    return M_info
-#
-#
-# def connect_rxns(M_info, iteration=0, outsiders=OrderedDict(), threshold=0.05):
-#    """
-#    This function will connect unit reactions.
-#
-#    Parameters
-#    ----------
-#    M_info : OrderedDict
-#        OrderedDict with frames in key and Molcule objects in a list [reactant, TS, product]
-#
-#    iteration : int
-#        Number of iteration
-#
-#    outsider : OrderedDict
-#        Reaction pathways that don't make any connections
-#
-#    Return
-#    ----------
-#    final : OrderedDict
-#        Molecule objects consist of unit reactions
-#    """
-#
-#    rxns = OrderedDict()
-#    temp = copy.deepcopy(M_info)
-#    connect = 0
-#    print("-----------------Iteration: %i-----------------" % iteration)
-#    print("Detecting connection points..")
-#    for i, (k1, v1) in enumerate(M_info.items()):
-#        for j, (k2, v2) in enumerate(M_info.items()):
-#            if j > i:
-#                if compare_rxns(v1, v2, threshold):
-#                    # Removing identical reaction pathways
-#                    if len(v1) >= len(v2) and k2 in temp.keys():
-#                        del temp[k2]
-#                    elif len(v1) < len(v2) and k1 in temp.keys():
-#                        del temp[k1]
-#                    continue
-#
-#                reac1 = v1[0]
-#                prod1 = v1[-1]
-#                reac2 = v2[0]
-#                prod2 = v2[-1]
-#                frm = k1 + "/" + k2
-#                if equal(reac1, reac2, threshold):
-#                    M = v2[::-1] + v1
-#                    if check_repeat(M, threshold):
-#                        continue
-#                    else:
-#                        try:
-#                            del temp[k1], temp[k2]
-#                        except:
-#                            pass
-#                        rxns[frm] = M
-#                        connect += 1
-#
-#                elif equal(reac1, prod2, threshold):
-#                    M = v2 + v1
-#                    if check_repeat(M, threshold):
-#                        continue
-#                    else:
-#                        try:
-#                            del temp[k1], temp[k2]
-#                        except:
-#                            pass
-#                        rxns[frm] = M
-#                        connect += 1
-#
-#                elif equal(prod1, reac2, threshold):
-#                    M = v1 + v2
-#                    if check_repeat(M, threshold):
-#                        continue
-#                    else:
-#                        try:
-#                            del temp[k1], temp[k2]
-#                        except:
-#                            pass
-#                        rxns[frm] = M
-#                        connect += 1
-#
-#                elif equal(prod1, prod2, threshold):
-#                    M = v1 + v2[::-1]
-#                    if check_repeat(M, threshold):
-#                        continue
-#                    else:
-#                        try:
-#                            del temp[k1], temp[k2]
-#                        except:
-#                            pass
-#                        rxns[frm] = M
-#                        connect += 1
-#
-#    outsiders.update(temp)
-#    print("Number of connections made", connect)
-#    print("Number of reactions in rxns", len(rxns))
-#    print("Number of outsiders", len(outsiders))
-#    if connect == 0:
-#        rxns.update(outsiders)
-#    final = copy.deepcopy(rxns)
-#    print("Numer of reactions saved", len(final))
-#    print("Cleaning..")
-#    for i, (k1, v1) in enumerate(rxns.items()):
-#        for j, (k2, v2) in enumerate(rxns.items()):
-#            if j > i:
-#                # if len(v1) == 3 and len(v2) == 3:
-#                if compare_rxns(v1, v2, threshold):
-#                    if len(v1) >= len(v2) and k2 in final.keys():
-#                        del final[k2]
-#                    elif len(v1) < len(v2) and k1 in final.keys():
-#                        del final[k1]
-#    print("After cleaning", len(final))
-#    iteration += 1
-#    if connect == 0:
-#        print("Done! %i reactions detected." % len(final))
-#        return final
-#    else:
-#        return connect_rxns(final, iteration, outsiders, threshold)
-
-
 def main():
     import argparse
 
@@ -464,94 +316,72 @@ def main():
     cwd = os.getcwd()
     dirs = os.scandir(cwd)
     rxns = collect(dirs)
-    # rxns = connect_rxns(result, args.rmsd)
 
     if not os.path.exists("reactions"):
         os.mkdir("reactions")
 
-    # for i, (k, v) in enumerate(rxns.items()):
-    #    Mol = copy.deepcopy(v[0])
-    #    for j in range(len(v) - 1):
-    #        Mol += v[j + 1]
-    #    Mol.write("reactions/%i_%i.xyz" % (i, len(Mol)))
+    BuildG = BuildGraph(rxns, args.charge)
 
-    G = BuildGraph(rxns, args.charge).build()
-    subs = [G.subgraph(c).copy() for c in nx.connected_components(G)]
-    if not os.path.exists("graphs"):
-        os.mkdir("graphs")
+    G = BuildG.build()
+    E_range = [BuildG.lowest_E, BuildG.highest_E]
+    #subs = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+    #if not os.path.exists("graphs"):
+    #    os.mkdir("graphs")
 
-    for i, G in enumerate(subs):
-        #    E_dict = {}
-        #    Es = nx.get_node_attributes(G, "E")
+    #for i, G in enumerate(subs):
+    #pos = nx.spring_layout(G, k = 1/np.sqrt(G.number_of_nodes()/5), iterations=1000)
+    #fig, ax = plt.subplots(figsize=(args.figsize, args.figsize))
+    # images = nx.get_node_attributes(G, "image")
+    # colors = nx.get_node_attributes(G, "color")
+    # smiles = nx.get_node_attributes(G, "smiles")
+    #nx.draw(G, pos=pos, node_color=colors.values(), with_labels=False)
+    for node in G.nodes:
+        pass
+    nt = Network('1000px', '1000px')
+    nt.from_nx(G)
+    nt.toggle_physics(True)
+    nt.show('test.html')
+    # node_labels = {n: "%f" % Es[n] for n in G.nodes()}
+    #node_labels = nx.get_node_attributes(G, "E")
+    #edge_labels = nx.get_edge_attributes(G, "E")
+    #nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_weight="bold")
+    #nx.draw_networkx_edge_labels(
+    #    G, pos, edge_labels=edge_labels, font_weight="bold"
+    #)
+    #plt.savefig(os.path.join("graphs", "graph_%i.png" % i))
 
-        #    for M in G.nodes():
-        #        E = Es[M]
-        #        if E not in E_dict:
-        #            E_dict[E] = [M]
-        #        else:
-        #            E_dict[E].append(M)
+    #tr_figure = ax.transData.transform
+    #tr_axes = fig.transFigure.inverted().transform
+    #nnodes = G.number_of_nodes()
 
-        #    for k, v in E_dict.items():
-        #        sub_dir = "subgraph_%i" % i
-        #        e_dir = os.path.join(sub_dir, str(abs(k)))
+    #if nnodes == 3:
+    #    img_size = 0.15
+    #else:
+    #    img_size = 0.15 / (np.sqrt(nnodes / 3)) * args.imgsize
 
-        #        if len(v) > 1:
-        #            if not os.path.exists(sub_dir):
-        #                os.mkdir(sub_dir)
-        #            if not os.path.exists(e_dir):
-        #                os.mkdir(e_dir)
+    #img_center = img_size / 2
 
-        #            for M_i, M in enumerate(v):
-        #                M.write(os.path.join(e_dir, "%i.xyz" % M_i))
+    #for n in G.nodes:
+    #    xf, yf = tr_figure(pos[n])
+    #    xa, ya = tr_axes((xf, yf))
+    #    a = plt.axes(
+    #        [
+    #            xa - img_center + args.imgx,
+    #            ya - img_center * 2.0 + args.imgy,
+    #            img_size,
+    #            img_size,
+    #        ]
+    #    )
+    #    mol_img = plt.imread(G.nodes[n]["image"])
 
-        pos = nx.spring_layout(G, k = 1/np.sqrt(G.number_of_nodes()/5), iterations=1000)
-        fig, ax = plt.subplots(figsize=(args.figsize, args.figsize))
-        # images = nx.get_node_attributes(G, "image")
-        colors = nx.get_node_attributes(G, "color")
-        # smiles = nx.get_node_attributes(G, "smiles")
-        nx.draw(G, pos=pos, node_color=colors.values(), with_labels=False)
-        # node_labels = {n: "%f" % Es[n] for n in G.nodes()}
-        node_labels = nx.get_node_attributes(G, "E")
-        edge_labels = nx.get_edge_attributes(G, "E")
-        nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_weight="bold")
-        nx.draw_networkx_edge_labels(
-            G, pos, edge_labels=edge_labels, font_weight="bold"
-        )
-        plt.savefig(os.path.join("graphs", "graph_%i.png" % i))
+    #    imgshape = mol_img.shape
+    #    alpha = np.zeros(imgshape)[:, :, 0]
+    #    alpha[np.where(mol_img[:, :, 0] != 1)] = 1
+    #    mol_img = np.dstack((mol_img, alpha.reshape(imgshape[0], imgshape[1], 1)))
+    #    a.imshow(mol_img)
+    #    a.axis("off")
 
-        tr_figure = ax.transData.transform
-        tr_axes = fig.transFigure.inverted().transform
-        nnodes = G.number_of_nodes()
-
-        if nnodes == 3:
-            img_size = 0.15
-        else:
-            img_size = 0.15 / (np.sqrt(nnodes / 3)) * args.imgsize
-
-        img_center = img_size / 2
-
-        for n in G.nodes:
-            # if colors[n] != "red":
-            xf, yf = tr_figure(pos[n])
-            xa, ya = tr_axes((xf, yf))
-            a = plt.axes(
-                [
-                    xa - img_center + args.imgx,
-                    ya - img_center * 2.0 + args.imgy,
-                    img_size,
-                    img_size,
-                ]
-            )
-            mol_img = plt.imread(G.nodes[n]["image"])
-
-            imgshape = mol_img.shape
-            alpha = np.zeros(imgshape)[:, :, 0]
-            alpha[np.where(mol_img[:, :, 0] != 1)] = 1
-            mol_img = np.dstack((mol_img, alpha.reshape(imgshape[0], imgshape[1], 1)))
-            a.imshow(mol_img)
-            a.axis("off")
-
-        plt.savefig("graph_PES_%i.png" % i)
+    #plt.savefig("graph_PES_%i.png" % i)
 
     print("Done!")
 
