@@ -22,6 +22,7 @@ setup(
         'matplotlib',
         'pyvis',
         'rdkit',
+        'pillow',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

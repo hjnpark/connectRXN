@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import numpy as np
+from PIL import Image, ImageDraw, ImageOps
 import sys, os, copy, itertools
 
 from pyvis.network import Network
@@ -8,7 +9,6 @@ from .molecule import Molecule, TopEqual, Elements
 from collections import OrderedDict
 import tarfile
 import networkx as nx
-import matplotlib.pyplot as plt
 from matplotlib import colors
 
 from xyz2mol import xyz2mol
@@ -17,6 +17,7 @@ from rdkit.Chem import Draw
 
 au2kcal = 627.5094740630558
 au2kj = 2625.4996394798254
+
 
 def equal(m1, m2, threshold=0.05):
     """
@@ -38,10 +39,10 @@ def equal(m1, m2, threshold=0.05):
     minimum_rmsd = min_rmsd(m1, m2)[0]
 
     # To check whether this function works well, writes xyz file so their geometries can be manually investigated.
-    #import random
+    # import random
 
-    #rand_int = random.randint(0, 100)
-    #if minimum_rmsd < threshold and rand_int == 50:
+    # rand_int = random.randint(0, 100)
+    # if minimum_rmsd < threshold and rand_int == 50:
     #    M = m1 + m2
     #    M.align()
     #    if not os.path.exists("low_rmsd"):
@@ -61,17 +62,21 @@ class BuildGraph(object):
     Use networkx to build a graph
     """
 
-    def __init__(self, rxns, charge):
+    def __init__(self, rxns, charge, imgsize, min_rmsd):
         self.G = nx.Graph()
         self.rxns = rxns
         self.charge = charge
         self.unique_rxns = []
         self.lowest_E = 0.0
+        self.imgsize = imgsize
         self.highest_E = 0.0
+        self.min_rmsd = min_rmsd
 
     def unify(self):
         """Pick out same molecules with different molecule objects and unify them"""
-        print("Detecting different molecule objects with same geometries and unifying them.")
+        print(
+            "Detecting different molecule objects with same geometries and unifying them."
+        )
         rxn_list = copy.deepcopy(list(self.rxns.values()))
         unique_pairs = list(itertools.combinations(enumerate(rxn_list), 2))
         skipping = []
@@ -81,12 +86,18 @@ class BuildGraph(object):
             TS1, TS2 = u_rxn1[1], u_rxn2[1]
             for (k, M1), (l, M2) in list(itertools.combinations(enumerate(M_list), 2)):
                 if M1 not in skipping:
-                    if M1.qm_energies[0] < self.lowest_E or M1.qm_energies[0] < self.lowest_E:
+                    if (
+                        M1.qm_energies[0] < self.lowest_E
+                        or M1.qm_energies[0] < self.lowest_E
+                    ):
                         self.lowest_E = min(M1.qm_energies[0], M2.qm_energies[0])
-                    if M1.qm_energies[0] < self.highest_E or M1.qm_energies[0] < self.highest_E:
+                    if (
+                        M1.qm_energies[0] < self.highest_E
+                        or M1.qm_energies[0] < self.highest_E
+                    ):
                         self.highest_E = min(M1.qm_energies[0], M2.qm_energies[0])
 
-                    if equal(M1, M2):
+                    if equal(M1, M2, self.min_rmsd):
                         rxn_list[j][M_index[l]] = M1
                         skipping.append(M2)
 
@@ -99,61 +110,82 @@ class BuildGraph(object):
         temp_G = nx.Graph()
         self.unify()
         print("Building the graph...")
+        rxn = 1
         for v in self.unique_rxns:
             for i, M in enumerate(v):
                 if i % 2 != 1:
                     atoms = []
                     for atom in v[i].elem:
                         atoms.append(Elements.index(atom))
-                    a = xyz2mol(
-                        atoms, v[i].xyzs[0], charge=self.charge
-                    )  # , allow_charged_fragments=False)
-                    if len(a) != 0:
-                        smiles = Chem.MolToSmiles(a[0])
+                    rdkit_mol = xyz2mol(
+                        atoms,
+                        v[i].xyzs[0],
+                        charge=self.charge,
+                        use_huckel=True,
+                        allow_charged_fragments=False,
+                        embed_chiral=False,
+                        get_resonance=False,
+                    )
 
-                        if not os.path.exists("2D_images"):
-                            os.mkdir("2D_images")
-                        Draw.MolToFile(
-                            a[0],
-                            os.path.join(
-                                "2D_images", "%s.png" % smiles.replace("/", "_")
-                            ),
-                        )
+                    if not os.path.exists("2D_images"):
+                        os.mkdir("2D_images")
 
-                    else:
-                        print(
-                            "WARNING: A node is missing SMILES. Probably from a wrong charge... This needs to be fixed"
-                        )
+                    if not os.path.exists("xyz_files"):
+                        os.mkdir("xyz_files")
+
+                    ident = "rxn%i_%i" % (rxn, i)
+                    v[i].write(os.path.join("xyz_files", "%s.xyz" % ident))
+                    img_path = os.path.join("2D_images", "%s.png" % ident)
+                    Draw.MolToFile(rdkit_mol, img_path)
+
+                    img = Image.open(img_path)
+
+                    expanded_img = ImageOps.expand(img, border=50, fill=(255, 255, 255))
+
+                    h, w = expanded_img.size
+
+                    lum_img = Image.new("L", [h, w], 0)
+                    draw = ImageDraw.Draw(lum_img)
+                    draw.pieslice([(0, 0), (h, w)], 0, 360, fill=255)
+
+                    draw_circle = ImageDraw.Draw(expanded_img)
+                    draw_circle.arc(
+                        [(0, 0), (h - 5, w - 5)], 0, 360, fill=(0, 0, 0), width=3
+                    )
+
+                    img_arr = np.array(expanded_img)
+                    lum_img_arr = np.array(lum_img)
+
+                    round_img = np.dstack((expanded_img, lum_img_arr))
+
+                    Image.fromarray(round_img).save(img_path)
+
                     temp_G.add_node(
                         str(hash(v[i])),
-                        smiles=smiles,
-                        #molecule=v[i],
-                        E=round((v[i].qm_energies[0]-self.lowest_E)*au2kcal, 1),
-                        image=os.path.join(
-                            "2D_images", smiles.replace("/", "_") + ".png"
-                        ),
-                        label=str(round((v[i].qm_energies[0]-self.lowest_E)*au2kcal, 1)),#kcal/mol
-                        size= 15,
-                        color="green",
+                        title="/xyz_files/%s.xyz" % ident,
+                        shape="image",
+                        E=round((v[i].qm_energies[0] - self.lowest_E) * au2kcal, 1),
+                        image=os.path.join("2D_images", "%s.png" % ident),
+                        label=str(
+                            round((v[i].qm_energies[0] - self.lowest_E) * au2kcal, 1)
+                        ),  # kcal/mol
+                        size=self.imgsize,
                     )
-                # else:
-                #    temp_G.add_node(
-                #        v[i],
-                #        # smiles=smiles,
-                #        # image=os.path.join(
-                #        #    "2D_images", smiles.replace("/", "_") + ".png"
-                #        # ),
-                #        E=round(float(v[i].qm_energies[0]), 5),
-                #        color="red",
-                #    )
-
                 if i == 2:
+                    TS_ident = "TS_rxn%i_%i-%i" % (rxn, i - 2, i)
+                    v[i].write(os.path.join("xyz_files", "%s.xyz" % TS_ident))
                     temp_G.add_edge(
-                        str(hash(v[i])),
                         str(hash(v[i - 2])),
-                        #molecule=v[i - 1],
-                        label=str(round((v[i-1].qm_energies[0]-self.lowest_E)*au2kcal, 1)),
+                        str(hash(v[i])),
+                        label=str(
+                            round(
+                                (v[i - 1].qm_energies[0] - self.lowest_E) * au2kcal, 1
+                            )
+                        ),
+                        title="/xyz_files/%s.xyz" % TS_ident,
+                        width=1,
                     )
+            rxn += 1
         self.G = nx.compose(self.G, temp_G)
 
         return self.G
@@ -223,6 +255,7 @@ def collect(dirs):
     print("Collecting is done. %i unit reactions are ready." % len(result))
     return result
 
+
 def main():
     import argparse
 
@@ -232,40 +265,50 @@ def main():
         "--rmsd",
         type=float,
         default=0.05,
-        help="If RMSD of two aligned molecule's Cartesian coordinate is better than this threshold, the two molecules are considered different",
+        help="If RMSD of two aligned molecule's Cartesian coordinate is smaller than this threshold, the two molecules are considered identical",
     )
-    #parser.add_argument(
-    #    "--figsize",
-    #    type=float,
-    #    default=15.0,
-    #    help="Size of potential energy surface graphs (inches)",
-    #)
+    parser.add_argument(
+        "--imgsize",
+        type=float,
+        default=30,
+        help="2D image (node) size for the graph",
+    )
+
+    parser.add_argument("--htmlsize", type=int, default=1000, help="html size in px")
+
     args = parser.parse_args(sys.argv[1:])
 
     cwd = os.getcwd()
     dirs = os.scandir(cwd)
     rxns = collect(dirs)
 
-    BuildG = BuildGraph(rxns, args.charge)
+    BuildG = BuildGraph(rxns, args.charge, args.imgsize, args.rmsd)
 
     G = BuildG.build()
 
-    Energies = list(G.nodes.data('E'))
+    Energies = list(G.nodes.data("E"))
     Energies.sort(key=lambda a: a[1])
     norm_factor = Energies[-1][-1]
 
-    rgb1 = np.array(colors.to_rgb('#00B2FF'))
-    rgb2 = np.array(colors.to_rgb('#FF0000'))
+    rgb1 = np.array(colors.to_rgb("#9AB3FF"))
+    rgb2 = np.array(colors.to_rgb("#FF6D6D"))
 
-    color_hex = [colors.to_hex((1-a[-1]/norm_factor)*rgb1 + (a[-1]/norm_factor)*rgb2) for a in Energies]
+    color_hex = [
+        colors.to_hex((1 - a[-1] / norm_factor) * rgb1 + (a[-1] / norm_factor) * rgb2)
+        for a in Energies
+    ]
 
     for i, E in enumerate(Energies):
-        G.nodes[E[0]]['color'] = color_hex[i]
+        G.nodes[E[0]]["color"] = color_hex[i]
 
-    nt = Network('1000px', '1000px')
+    nt = Network("%ipx" % args.htmlsize, "%ipx" % args.htmlsize)
     nt.from_nx(G)
+    for e in nt.edges:
+        e["width"] = 5
     nt.toggle_physics(True)
-    nt.show('test_color.html')
+    nt.save_graph("PES_graph.html")
+
+    graph_html = nt.generate_html()
 
     print("Done!")
 
