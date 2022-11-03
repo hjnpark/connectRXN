@@ -106,7 +106,7 @@ class BuildGraph(object):
                 skipping.append(TS2)
         self.unique_rxns = rxn_list
 
-    def build(self):
+    def build(self, remove_conformers):
         temp_G = nx.Graph()
         self.unify()
         print("Building the graph...")
@@ -126,6 +126,9 @@ class BuildGraph(object):
                         embed_chiral=False,
                         get_resonance=False,
                     )
+
+                    if remove_conformers:
+                        rdkit_mol.RemoveAllConformers()
 
                     if not os.path.exists("2D_images"):
                         os.mkdir("2D_images")
@@ -260,13 +263,20 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--charge", type=int, default=0, help="Molecular charges")
+    parser.add_argument("--charge", type=int, default=0, help="Molecular charge")
     parser.add_argument(
         "--rmsd",
         type=float,
         default=0.05,
         help="If RMSD of two aligned molecule's Cartesian coordinate is smaller than this threshold, the two molecules are considered identical",
     )
+
+    parser.add_argument(
+        "--remove_conformers",
+        action="store_true",
+        help="Remove conformers in rdchem.Mol object before drawing 2D molecular images",
+    )
+
     parser.add_argument(
         "--imgsize",
         type=float,
@@ -284,7 +294,7 @@ def main():
 
     BuildG = BuildGraph(rxns, args.charge, args.imgsize, args.rmsd)
 
-    G = BuildG.build()
+    G = BuildG.build(args.remove_conformers)
 
     Energies = list(G.nodes.data("E"))
     Energies.sort(key=lambda a: a[1])
